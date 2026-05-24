@@ -1,0 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=Archivo+Black&family=Bebas+Neue&display=swap');
+
+:root {
+    --primary:     #FFD600;
+    --secondary:   #00E0FF;
+    --accent:      #FF5C00;
+    --pink:        #FF3CAC;
+    --green:       #00FF94;
+    --purple:      #7B2FFF;
+    --blue:        #001ee1;
+    --bg:          #FFFFFF;
+    --text:        #000000;
+    --border:      #000000;
+    --shadow:      #000000;
+    --border-w:    3px;
+    --shadow-size: 6px 6px 0px;
+}
+
+/* ── GLOBAL ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    color: var(--text);
+    background-color: #f4f4f0;
+    background-image: url('/e-kost-system/assets/img/texturebg.jpg');
+    background-repeat: repeat;
+    background-size: 900px auto;
+    background-attachment: fixed;
+}
+
+/* ── NEUBRUTALISM TYPOGRAPHY ── */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Archivo Black', 'Space Grotesk', sans-serif;
+    letter-spacing: -0.5px;
+    font-weight: 900;
+}
+.fw-bold, .fw-black { font-family: 'Archivo Black', 'Space Grotesk', sans-serif; }
+
+p, li, span, td, th, label, input, select, textarea, button, a {
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ── NAVBAR ── */
+.navbar {
+    background-color: #001ee1;
+    border-bottom: 4px solid var(--border);
+    padding: 1rem 0;
+}
+.navbar-brand {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    color: #FFD600 !important;
+}
+.navbar .nav-link        { color: #ffffff !important; font-weight: 700; font-family: 'Space Grotesk', sans-serif; }
+.navbar .nav-link:hover  { color: #FFD600 !important; }
+.navbar .navbar-toggler       { border-color: #ffffff; }
+.navbar .navbar-toggler-icon  { filter: invert(1); }
+.navbar .dropdown-menu {
+    border: 3px solid #000;
+    border-radius: 0;
+    box-shadow: 6px 6px 0 #000;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+}
+
+/* ── CARD ── */
+.card {
+    background-color: var(--bg);
+    border: var(--border-w) solid var(--border) !important;
+    border-radius: 0 !important;
+    box-shadow: var(--shadow-size) var(--shadow) !important;
+    transition: transform .15s, box-shadow .15s;
+}
+.card:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px var(--shadow) !important;
+}
+.card-header, .card-footer {
+    font-family: 'Archivo Black', sans-serif;
+    border-radius: 0 !important;
+    border-color: #000 !important;
+}
+
+/* ── BUTTONS ── */
+.btn {
+    border: var(--border-w) solid var(--border) !important;
+    border-radius: 0 !important;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    box-shadow: 4px 4px 0px var(--shadow);
+    transition: transform .08s, box-shadow .08s;
+}
+.btn:hover  { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--shadow); }
+.btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 var(--shadow); }
+
+.btn-primary   { background-color: var(--blue) !important; color: #FFD600 !important; }
+.btn-success   { background-color: #25D366 !important; color: #fff !important; }
+.btn-danger    { background-color: #FF4B4B !important; color: #fff !important; }
+.btn-warning   { background-color: var(--primary) !important; color: #000 !important; }
+.btn-outline-primary { background: transparent !important; color: var(--blue) !important; }
+.btn-outline-dark    { background: transparent !important; color: #000 !important; }
+.btn-light     { background: #fff !important; color: #000 !important; }
+
+/* ── FORMS ── */
+.form-control, .form-select {
+    border: 3px solid #000 !important;
+    border-radius: 0 !important;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+}
+.form-control:focus, .form-select:focus {
+    box-shadow: 4px 4px 0 #000 !important;
+    background: #FFFDE7 !important;
+    border-color: #000 !important;
+}
+.form-label {
+    font-family: 'Archivo Black', sans-serif;
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ── TABLES ── */
+.table {
+    border: 3px solid #000;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+}
+.table th {
+    font-family: 'Archivo Black', sans-serif;
+    text-transform: uppercase;
+    font-size: .8rem;
+    letter-spacing: .5px;
+    background: #000;
+    color: #FFD600;
+    border-color: #000 !important;
+}
+.table td { border-color: #000 !important; }
+.table-striped > tbody > tr:nth-of-type(odd) > * { background-color: rgba(0,30,225,.05); }
+
+/* ── BADGES ── */
+.badge {
+    border-radius: 0 !important;
+    border: 2px solid #000;
+    font-family: 'Archivo Black', sans-serif;
+    font-size: .7rem;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+/* ── ALERTS ── */
+.alert {
+    border: 3px solid #000 !important;
+    border-radius: 0 !important;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    box-shadow: 4px 4px 0 #000;
+}
+
+/* ── PAGINATION ── */
+.page-link {
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+    font-family: 'Archivo Black', sans-serif;
+    color: #000;
+}
+.page-item.active .page-link { background: #001ee1; color: #FFD600; }
+
+/* ── LIST GROUP ── */
+.list-group-item {
+    border: 2px solid #000 !important;
+    border-radius: 0 !important;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+}
+.list-group-item.active { background: #001ee1; border-color: #000 !important; }
+
+/* ── MAIN CONTENT ── */
+.main-content { padding-bottom: 60px; }
+
+/* ── FOOTER ── */
+footer, .footer {
+    background: #000 !important;
+    color: #FFD600;
+    border-top: 5px solid #FFD600;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+}
+
+/* ── SIDEBAR / DASHBOARD ── */
+.sidebar {
+    background: #001ee1 !important;
+    border-right: 4px solid #000;
+    font-family: 'Space Grotesk', sans-serif;
+}
+.sidebar .nav-link {
+    color: #fff !important;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: .82rem;
+    letter-spacing: .5px;
+    border-left: 3px solid transparent;
+    transition: all .12s;
+}
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background: rgba(255,255,255,.12);
+    border-left-color: #FFD600;
+    color: #FFD600 !important;
+}
+
+/* ── HERO (index) ── */
+.hero-section {
+    background: #001ee1;
+    border-bottom: 5px solid #000;
+    padding: 80px 0;
+    position: relative;
+    overflow: hidden;
+}
+.hero-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: url('/e-kost-system/assets/img/texturebg.jpg');
+    background-size: 700px auto;
+    opacity: .07;
+}
+
+/* ── KOST CARD ── */
+.kost-card { overflow: hidden; }
+.kost-card img { border-bottom: 3px solid #000; }
+.kost-card .card-title { font-family: 'Archivo Black', sans-serif; font-size: 1rem; text-transform: uppercase; }
+.kost-card .price { font-family: 'Archivo Black', sans-serif; font-size: 1.15rem; color: #001ee1; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f4f4f0; }
+::-webkit-scrollbar-thumb { background: #000; border: 2px solid #f4f4f0; }
