@@ -46,11 +46,7 @@ include '../../layouts/header.php';
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-3">
-                        <div class="p-3 border border-2 border-dark bg-light">
-                            <h6 class="fw-bold mb-1">Backup Database</h6>
-                            <p class="small text-muted mb-2">Unduh salinan database terbaru dalam format .sql</p>
-                            <a href="backup.php" class="btn btn-dark btn-sm w-100">JALANKAN BACKUP</a>
-                        </div>
+
                         <div class="p-3 border border-2 border-dark bg-light">
                             <h6 class="fw-bold mb-1">Log Sistem</h6>
                             <p class="small text-muted mb-2">Lihat riwayat aktivitas admin dan error sistem.</p>
