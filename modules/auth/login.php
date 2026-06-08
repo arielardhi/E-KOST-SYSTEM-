@@ -1,5 +1,6 @@
 <?php
 require_once '../../config/database.php';
+require_once '../../config/google.php';
 session_start();
 
 if (isset($_SESSION['user_id'])) {
@@ -8,6 +9,10 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $error = '';
+if (isset($_SESSION['google_auth_error'])) {
+    $error = $_SESSION['google_auth_error'];
+    unset($_SESSION['google_auth_error']);
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
@@ -37,98 +42,88 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login — E-KOST SYSTEM</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&family=Archivo+Black&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: 'Plus Jakarta Sans', sans-serif;
         min-height: 100vh;
         display: flex;
-        background-image: url('/e-kost-system/assets/img/texturebg.jpg');
-        background-repeat: repeat;
-        background-size: 900px auto;
-        background-color: #f4f4f0;
+        background-color: #F8F4E3; /* Cream background */
     }
-
-    /* Color strips top */
-    .color-strip { position: absolute; left: 0; right: 0; }
-    .strip-1 { top: 0;  height: 8px; background: #FFD600; border-bottom: 2px solid #000; }
-    .strip-2 { top: 8px; height: 8px; background: #FF3CAC; border-bottom: 2px solid #000; }
-    .strip-3 { top: 16px; height: 8px; background: #00E0FF; border-bottom: 2px solid #000; }
-    .strip-4 { top: 24px; height: 8px; background: #00FF94; border-bottom: 2px solid #000; }
-    .strip-5 { top: 32px; height: 8px; background: #FF5C00; border-bottom: 2px solid #000; }
-
-    .field-accent { height: 4px; margin-top: -3px; margin-bottom: 16px; border: none; }
-    .accent-y { background: #FFD600; }
-    .accent-p { background: #FF3CAC; }
-    .accent-g { background: #00FF94; }
 
     /* LEFT PANEL */
     .left-panel {
         width: 42%;
-        background: #001ee1;
-        border-right: 5px solid #000;
+        background: linear-gradient(135deg, #2D1459 0%, #1A0A3A 100%); /* Deep Purple Gradient */
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         padding: 48px 44px;
         position: relative;
         overflow: hidden;
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
     .left-panel::before {
         content: '';
         position: absolute; inset: 0;
-        background-image: url('/e-kost-system/assets/img/texturebg.jpg');
-        background-size: 600px auto;
-        opacity: .06;
+        background-image: radial-gradient(circle at 70% 30%, rgba(91, 201, 204, 0.15) 0%, transparent 60%); /* Turquoise light */
+        pointer-events: none;
     }
     .left-panel > * { position: relative; }
 
     .brand-tag {
-        display: inline-block;
-        background: #FFD600;
-        color: #000;
-        border: 3px solid #000;
-        font-family: 'Archivo Black', sans-serif;
-        font-size: .75rem;
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(91, 201, 204, 0.15); /* Turquoise transparent */
+        color: #5BC9CC; /* Turquoise */
+        font-size: .8rem;
+        font-weight: 600;
         padding: 6px 14px;
-        box-shadow: 4px 4px 0 #000;
+        border-radius: 9999px;
+        border: 1px solid rgba(91, 201, 204, 0.25);
         margin-bottom: 28px;
     }
     .left-title {
-        font-family: 'Archivo Black', sans-serif;
-        font-size: clamp(2.4rem, 4vw, 4rem);
+        font-size: clamp(2.4rem, 4vw, 3.5rem);
         color: #fff;
-        text-transform: uppercase;
-        line-height: .95;
-        letter-spacing: -2px;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
     }
-    .left-title span { color: #FFD600; display: block; }
+    .left-title span { 
+        background: linear-gradient(to right, #5BC9CC, #E85C50); /* Turquoise to Coral */
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: block; 
+    }
 
-    .left-desc { color: #a8bcff; font-size: .95rem; font-weight: 500; margin-top: 20px; max-width: 320px; line-height: 1.6; }
+    .left-desc { color: #EBE6D0; font-size: .95rem; font-weight: 500; margin-top: 20px; max-width: 340px; line-height: 1.6; opacity: 0.85; }
 
     .feature-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 32px; }
     .ftag {
         display: inline-flex; align-items: center; gap: 6px;
-        border: 2.5px solid rgba(255,255,255,.4);
-        color: #fff; font-weight: 700; font-size: .78rem;
+        border: 1px solid rgba(255,255,255,.1);
+        background: rgba(255,255,255,.05);
+        color: #fff; font-weight: 600; font-size: .78rem;
         padding: 6px 12px;
-        text-transform: uppercase; letter-spacing: .5px;
+        border-radius: 6px;
     }
     .ftag-dot { width: 8px; height: 8px; border-radius: 50%; }
 
     .left-bottom-card {
-        background: rgba(255,255,255,.08);
-        border: 2px solid rgba(255,255,255,.2);
+        background: rgba(255,255,255,.03);
+        border: 1px solid rgba(255,255,255,.08);
         padding: 20px;
+        border-radius: 12px;
     }
-    .left-bottom-card p { color: #cdd6ff; font-size: .82rem; margin: 0; font-style: italic; line-height: 1.5; }
-    .left-bottom-card strong { color: #FFD600; font-size: .78rem; display: block; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .left-bottom-card p { color: #EBE6D0; font-size: .85rem; margin: 0; font-style: italic; line-height: 1.6; opacity: 0.8; }
+    .left-bottom-card strong { color: #5BC9CC; font-size: .8rem; display: block; margin-top: 8px; font-weight: 600; }
 
     /* RIGHT PANEL */
     .right-panel {
@@ -142,121 +137,141 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     .login-card {
         background: #fff;
-        border: 4px solid #000;
-        box-shadow: 10px 10px 0 #000;
+        border: 1px solid #EBE6D0;
+        box-shadow: 0 10px 25px -5px rgba(45, 20, 89, 0.05), 0 8px 10px -6px rgba(45, 20, 89, 0.05);
         padding: 40px 36px;
+        border-radius: 16px;
     }
     .login-title {
-        font-family: 'Archivo Black', sans-serif;
         font-size: 2rem;
-        text-transform: uppercase;
-        letter-spacing: -1px;
-        line-height: 1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.2;
         margin-bottom: 6px;
+        color: #2D1459;
     }
-    .login-sub { color: #666; font-size: .88rem; font-weight: 500; margin-bottom: 28px; }
+    .login-sub { color: #7A6A8E; font-size: .88rem; font-weight: 500; margin-bottom: 28px; }
 
     .form-label {
-        font-family: 'Archivo Black', sans-serif;
-        font-size: .72rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #000;
+        font-weight: 600;
+        font-size: .75rem;
+        color: #2D1459;
         margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
     }
     .nb-input {
         width: 100%;
-        border: 3px solid #000;
-        border-radius: 0;
+        border: 1px solid #EBE6D0;
+        border-radius: 8px;
         padding: 12px 14px;
-        font-family: 'Space Grotesk', sans-serif;
-        font-weight: 600;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 500;
         font-size: .95rem;
         background: #fff;
-        transition: box-shadow .1s, background .1s;
+        transition: all .15s ease;
         outline: none;
     }
-    .nb-input:focus { background: #FFFDE7; box-shadow: 4px 4px 0 #000; }
+    .nb-input:focus { border-color: #5BC9CC; box-shadow: 0 0 0 4px rgba(91, 201, 204, 0.15); }
 
     .input-icon-wrap { position: relative; }
     .input-icon-wrap .nb-input { padding-left: 44px; }
     .input-icon {
         position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
-        font-size: 1rem; color: #999; pointer-events: none;
+        font-size: 1.1rem; color: #7A6A8E; pointer-events: none;
     }
 
     .btn-login {
         width: 100%;
-        background: #001ee1;
-        color: #FFD600;
-        border: 3px solid #000;
-        border-radius: 0;
-        font-family: 'Archivo Black', sans-serif;
-        font-size: 1rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
+        background: #5BC9CC;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: .95rem;
         padding: 14px;
-        box-shadow: 6px 6px 0 #000;
         cursor: pointer;
-        transition: transform .08s, box-shadow .08s;
+        transition: all 0.2s ease;
         margin-top: 8px;
     }
-    .btn-login:hover  { transform: translate(-2px,-2px); box-shadow: 8px 8px 0 #000; background: #0016b0; }
-    .btn-login:active { transform: translate(3px,3px); box-shadow: 1px 1px 0 #000; }
+    .btn-login:hover { background: #3AAFB2; transform: translateY(-1px); }
+    .btn-login:active { transform: translateY(1px); }
 
     .divider-text {
         display: flex; align-items: center; gap: 12px;
-        color: #aaa; font-size: .8rem; font-weight: 700;
+        color: #7A6A8E; font-size: .8rem; font-weight: 600;
         text-transform: uppercase; letter-spacing: 1px;
         margin: 20px 0;
     }
     .divider-text::before, .divider-text::after {
-        content: ''; flex: 1; height: 2px; background: #e0e0e0;
+        content: ''; flex: 1; height: 1px; background: #EBE6D0;
     }
 
     .btn-wa {
         width: 100%;
-        background: #25D366;
+        background: #22c55e;
         color: #fff;
-        border: 3px solid #000;
-        border-radius: 0;
-        font-family: 'Archivo Black', sans-serif;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
         font-size: .85rem;
-        text-transform: uppercase;
-        letter-spacing: .5px;
         padding: 12px;
-        box-shadow: 5px 5px 0 #000;
         cursor: pointer;
         text-decoration: none;
         display: flex; align-items: center; justify-content: center; gap: 8px;
-        transition: transform .08s, box-shadow .08s;
+        transition: all 0.2s ease;
     }
-    .btn-wa:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 #000; color: #fff; }
+    .btn-wa:hover { background: #16a34a; transform: translateY(-1px); color: #fff; }
+
+    .btn-google {
+        width: 100%;
+        background: #ffffff;
+        color: #1e293b;
+        border: 1px solid #EBE6D0;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: .88rem;
+        padding: 12px;
+        cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        font-family: inherit;
+    }
+    .btn-google:hover {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        transform: translateY(-1px);
+    }
+    .btn-google:active {
+        transform: translateY(1px);
+    }
 
     .error-box {
-        background: #FF4B4B;
-        color: #fff;
-        border: 3px solid #000;
-        box-shadow: 4px 4px 0 #000;
+        background: #fef2f2;
+        color: #ef4444;
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
         padding: 12px 16px;
-        font-weight: 700;
+        font-weight: 600;
         font-size: .88rem;
         margin-bottom: 20px;
         display: flex; align-items: center; gap: 10px;
     }
 
-    .link-row { text-align: center; margin-top: 20px; font-size: .88rem; }
-    .link-row a { color: #001ee1; font-weight: 800; text-decoration: none; border-bottom: 2px solid #001ee1; }
-    .link-row a:hover { background: #001ee1; color: #FFD600; padding: 0 4px; }
+    .link-row { text-align: center; margin-top: 20px; font-size: .88rem; color: #7A6A8E; }
+    .link-row a { color: #5BC9CC; font-weight: 600; text-decoration: none; }
+    .link-row a:hover { text-decoration: underline; }
 
     .back-link {
-        text-align: center; margin-top: 12px;
+        text-align: center; margin-top: 16px;
     }
     .back-link a {
-        color: #666; font-size: .82rem; font-weight: 700;
+        color: #7A6A8E; font-size: .85rem; font-weight: 600;
         text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+        transition: color 0.15s ease;
     }
-    .back-link a:hover { color: #001ee1; }
+    .back-link a:hover { color: #5BC9CC; }
 
     /* Mobile */
     @media (max-width: 768px) {
@@ -269,20 +284,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!-- LEFT PANEL -->
 <div class="left-panel">
-    <div class="color-strip strip-1"></div>
-    <div class="color-strip strip-2"></div>
-    <div class="color-strip strip-3"></div>
-    <div class="color-strip strip-4"></div>
-    <div class="color-strip strip-5"></div>
     <div>
-        <div class="brand-tag">✦ E-KOST SYSTEM</div>
+        <div class="brand-tag d-flex align-items-center"><img src="../../assets/images/logo.png" alt="Logo" class="me-2 rounded" style="height: 20px; width: 20px; background-color: transparent; object-fit: contain;"> E-KOST SYSTEM</div>
         <h1 class="left-title">Selamat<br>Datang<br><span>Kembali!</span></h1>
         <p class="left-desc">Masuk ke akun kamu dan mulai cari kost terbaik atau kelola propertimu dengan mudah.</p>
         <div class="feature-tags">
-            <div class="ftag"><div class="ftag-dot" style="background:#FFD600;"></div>Cari Kost</div>
-            <div class="ftag"><div class="ftag-dot" style="background:#FF3CAC;"></div>Booking Online</div>
-            <div class="ftag"><div class="ftag-dot" style="background:#00FF94;"></div>Chat Pemilik</div>
-            <div class="ftag"><div class="ftag-dot" style="background:#00E0FF;"></div>Dashboard</div>
+            <div class="ftag"><div class="ftag-dot" style="background:#5BC9CC;"></div>Cari Kost</div>
+            <div class="ftag"><div class="ftag-dot" style="background:#E85C50;"></div>Booking Online</div>
+            <div class="ftag"><div class="ftag-dot" style="background:#10b981;"></div>Chat Pemilik</div>
+            <div class="ftag"><div class="ftag-dot" style="background:#2D1459;"></div>Dashboard</div>
         </div>
     </div>
     <div class="left-bottom-card">
@@ -295,8 +305,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="right-panel">
     <div class="login-box">
         <div class="login-card">
-            <h2 class="login-title">Masuk<br>Akun</h2>
-            <p class="login-sub">Belum punya akun? <a href="register.php" style="color:#001ee1;font-weight:800;text-decoration:none;border-bottom:2px solid #001ee1;">Daftar gratis</a></p>
+            <h2 class="login-title">Masuk</h2>
+            <p class="login-sub">Belum punya akun? <a href="register.php" style="color:#5BC9CC;font-weight:600;text-decoration:none;">Daftar gratis</a></p>
 
             <?php if ($error): ?>
                 <div class="error-box">
@@ -305,26 +315,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
 
             <form method="POST">
-                <div class="mb-1">
+                <div class="mb-3">
                     <label class="form-label">Username</label>
                     <div class="input-icon-wrap">
                         <i class="bi bi-person-fill input-icon"></i>
                         <input type="text" name="username" class="nb-input" placeholder="Masukkan username..." required autocomplete="username">
                     </div>
                 </div>
-                <div class="field-accent accent-y"></div>
-                <div class="mb-1">
+                <div class="mb-2">
                     <label class="form-label">Password</label>
                     <div class="input-icon-wrap">
                         <i class="bi bi-lock-fill input-icon"></i>
                         <input type="password" name="password" class="nb-input" placeholder="Masukkan password..." required autocomplete="current-password" id="passInput">
                     </div>
                 </div>
-                <div class="d-flex justify-content-end mb-4">
-                    <label style="font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <label style="font-size:.82rem;font-weight:600;color:#64748b;cursor:pointer;display:flex;align-items:center;gap:6px;">
                         <input type="checkbox" onchange="document.getElementById('passInput').type=this.checked?'text':'password'">
                         Tampilkan Password
                     </label>
+                    <a href="forgot_password.php" style="font-size:.82rem;font-weight:700;color:#5BC9CC;text-decoration:none;">Lupa Password?</a>
                 </div>
                 <button type="submit" class="btn-login">
                     <i class="bi bi-box-arrow-in-right me-2"></i> Masuk Sekarang
@@ -333,19 +343,32 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <div class="divider-text">atau</div>
 
-            <a href="https://wa.me/6281234567890?text=Halo%2C+saya+butuh+bantuan+login+E-KOST+System" target="_blank" class="btn-wa">
-                <i class="bi bi-whatsapp" style="font-size:1.1rem;"></i> Hubungi Admin via WhatsApp
-            </a>
+            <button type="button" class="btn-google" onclick="startGoogleAuth()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" style="width:18px;height:18px;flex-shrink:0;">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    <path fill="none" d="M0 0h48v48H0z"/>
+                </svg>
+                Masuk dengan Google
+            </button>
+
         </div>
 
-        <div class="link-row">
-            Belum punya akun? <a href="register.php">Daftar di sini</a>
-        </div>
         <div class="back-link">
             <a href="../../index.php"><i class="bi bi-arrow-left"></i> Kembali ke Beranda</a>
         </div>
     </div>
 </div>
 
+<script>
+function startGoogleAuth() {
+    const clientId = "<?php echo GOOGLE_CLIENT_ID; ?>";
+    const redirectUri = "<?php echo GOOGLE_REDIRECT_URI; ?>";
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20profile%20email&state=user`;
+    window.location.href = authUrl;
+}
+</script>
 </body>
 </html>

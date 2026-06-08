@@ -132,32 +132,44 @@ $avg_rating = round($rating_stats['avg_rating'] ?? 0, 1);
 
             <!-- ROOMS CATALOG -->
             <h4 class="fw-black text-uppercase mb-3">Pilihan Kamar</h4>
-            <?php foreach ($rooms as $room): ?>
-                <div class="card mb-3 kost-card">
-                    <div class="card-body p-4">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h5 class="fw-black text-uppercase mb-2"><?php echo $room['room_name']; ?></h5>
-                                <div class="d-flex gap-3 mb-3">
-                                    <span class="small fw-bold"><i class="bi bi-aspect-ratio me-1"></i> <?php echo $room['size']; ?></span>
-                                    <span class="small fw-bold text-<?php echo $room['available_rooms'] > 0 ? 'success' : 'danger'; ?>">
-                                        <i class="bi bi-door-open me-1"></i> Sisa <?php echo $room['available_rooms']; ?> kamar
-                                    </span>
+            <?php if (empty($rooms)): ?>
+                <div class="card mb-3 p-4 text-center border-2">
+                    <p class="mb-0 fw-bold text-muted">
+                        <i class="bi bi-exclamation-circle text-warning me-2"></i> Belum ada pilihan kamar yang terdaftar atau tersedia untuk kost ini saat ini.
+                    </p>
+                </div>
+            <?php else: ?>
+                <?php foreach ($rooms as $room): ?>
+                    <div class="card mb-3 kost-card">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="fw-black text-uppercase mb-2"><?php echo $room['room_name']; ?></h5>
+                                    <div class="d-flex gap-3 mb-3">
+                                        <span class="small fw-bold"><i class="bi bi-aspect-ratio me-1"></i> <?php echo $room['size']; ?></span>
+                                        <span class="small fw-bold text-<?php echo $room['available_rooms'] > 0 ? 'success' : 'danger'; ?>">
+                                            <i class="bi bi-door-open me-1"></i> Sisa <?php echo $room['available_rooms']; ?> kamar
+                                        </span>
+                                    </div>
+                                    <p class="mb-0 small fw-bold text-muted"><?php echo $room['facilities']; ?></p>
                                 </div>
-                                <p class="mb-0 small fw-bold text-muted"><?php echo $room['facilities']; ?></p>
-                            </div>
-                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                <div class="h4 fw-black mb-3">Rp <?php echo number_format($room['price_per_month'], 0, ',', '.'); ?> <small class="text-muted fw-normal" style="font-size: .9rem;">/ bln</small></div>
-                                <?php if (isset($_SESSION['user_id'])): ?>
-                                    <a href="booking.php?room_id=<?php echo $room['id']; ?>" class="btn btn-primary w-100 fw-bold py-2">PESAN SEKARANG</a>
-                                <?php else: ?>
-                                    <a href="../modules/auth/login.php" class="btn btn-primary w-100 fw-bold py-2">LOGIN UNTUK PESAN</a>
-                                <?php endif; ?>
+                                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                    <div class="h4 fw-black mb-3">Rp <?php echo number_format($room['price_per_month'], 0, ',', '.'); ?> <small class="text-muted fw-normal" style="font-size: .9rem;">/ bln</small></div>
+                                    <?php if (isset($_SESSION['user_id'])): ?>
+                                        <?php if ($_SESSION['role'] === 'user'): ?>
+                                            <a href="booking.php?room_id=<?php echo $room['id']; ?>" class="btn btn-primary w-100 fw-bold py-2">PESAN SEKARANG</a>
+                                        <?php else: ?>
+                                            <button class="btn btn-secondary w-100 fw-bold py-2" disabled title="Hanya akun Penyewa yang dapat memesan kost">KHUSUS PENYEWA</button>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <a href="../modules/auth/login.php" class="btn btn-primary w-100 fw-bold py-2">LOGIN UNTUK PESAN</a>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            <?php endforeach; ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
 
             <!-- REVIEW SECTION -->
             <div class="card mt-5 mb-4 border-3">

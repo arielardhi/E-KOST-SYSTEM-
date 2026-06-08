@@ -428,7 +428,7 @@
                     <span style="background:rgba(255,214,0,.12);color:#FFD600;border:2px solid rgba(255,214,0,.4);padding:4px 12px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.75rem;"><?= $tag ?></span>
                     <?php endforeach; ?>
                 </div>
-                <a href="kost_api.php" style="display:inline-flex;align-items:center;gap:10px;background:#FFD600;color:#000;border:4px solid #FFD600;box-shadow:6px 6px 0 #FFD600;padding:14px 28px;font-family:'Archivo Black',sans-serif;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all .1s;">
+                <a href="barang_api.php" style="display:inline-flex;align-items:center;gap:10px;background:#FFD600;color:#000;border:4px solid #FFD600;box-shadow:6px 6px 0 #FFD600;padding:14px 28px;font-family:'Archivo Black',sans-serif;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;text-decoration:none;transition:all .1s;">
                     <i class="bi bi-arrow-right-circle-fill"></i> Buka Halaman React
                 </a>
             </div>

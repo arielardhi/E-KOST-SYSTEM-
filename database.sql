@@ -129,20 +129,20 @@ CREATE TABLE notifikasi (
 );
 
 -- Default Admin Account (password: admin123)
-INSERT INTO users (username, password, email, role, full_name) 
-VALUES ('admin', '$2y$10$f6pXW4vG7H.O6vX8fXfXfXfXfXfXfXfXfXfXfXfXfXfXfXfXfXfX', 'admin@ekost.com', 'admin', 'System Administrator');
+INSERT INTO users (id, username, password, email, role, full_name) 
+VALUES (1, 'admin', '$2y$10$ddjRJLKdUTIl03cjRjgLYOBSrIp8NCCYytr2wTRWW8TloiBQNjVve', 'admin@ekost.com', 'admin', 'System Administrator');
 
 -- ══════════════════════════════════════════════════════
 -- SAMPLE DATA — Kost & Kamar
 -- ══════════════════════════════════════════════════════
 
--- Sample Owners
-INSERT INTO users (username, password, email, role, full_name, phone) VALUES
-('budi_owner',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'budi@owner.com',  'owner', 'Budi Santoso',   '081234567890'),
-('siti_owner',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'siti@owner.com',  'owner', 'Siti Rahayu',    '082345678901'),
-('andi_owner',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'andi@owner.com',  'owner', 'Andi Wijaya',    '083456789012'),
-('dewi_owner',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'dewi@owner.com',  'owner', 'Dewi Lestari',   '084567890123'),
-('rudi_owner',  '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'rudi@owner.com',  'owner', 'Rudi Hermawan',  '085678901234');
+-- Sample Owners & Users (Exactly 3 Owners & 2 Users)
+INSERT INTO users (id, username, password, email, role, full_name, phone) VALUES
+(2, 'owner1', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner1@ekost.com', 'owner', 'Owner Satu', '081111111111'),
+(3, 'owner2', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner2@ekost.com', 'owner', 'Owner Dua',  '082222222222'),
+(4, 'owner3', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner3@ekost.com', 'owner', 'Owner Tiga', '083333333333'),
+(5, 'user1',  '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'user1@ekost.com',  'user',  'User Satu',  '084444444444'),
+(6, 'user2',  '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'user2@ekost.com',  'user',  'User Dua',   '085555555555');
 
 -- Sample Kost (10 data di berbagai kota)
 INSERT INTO kost (owner_id, name, type, description, address, city, latitude, longitude, facilities, rules) VALUES
@@ -152,8 +152,8 @@ INSERT INTO kost (owner_id, name, type, description, address, city, latitude, lo
 (3, 'Kost Sejuk Bandung',  'Putri', 'Kost eksklusif putri di kawasan sejuk Lembang. Dekat wisata dan pusat perbelanjaan Bandung.', 'Jl. Raya Lembang No. 67', 'Bandung', -6.8118, 107.6165, 'WiFi,AC,Kamar Mandi Dalam,Taman,CCTV,Laundry,Kulkas', 'Khusus wanita, Tidak boleh merokok, Jam malam 22.00'),
 (4, 'Kost Grand Jakarta',  'Campur','Kost premium di pusat bisnis Jakarta Selatan. Ideal untuk profesional muda dan mahasiswa pascasarjana.', 'Jl. Sudirman No. 123, Kebayoran Baru', 'Jakarta', -6.2181, 106.8098, 'WiFi,AC,Kamar Mandi Dalam,Parkir Mobil,Parkir Motor,Kolam Renang,Gym,CCTV,Cleaning Service', 'Tidak merokok di dalam gedung, Tamu hanya sampai jam 21.00'),
 (4, 'Kost Ceria Mahasiswa', 'Putra','Kost ramah mahasiswa dekat Universitas Indonesia. Harga terjangkau dengan fasilitas memadai.', 'Jl. Margonda Raya No. 34, Depok', 'Jakarta', -6.3728, 106.8302, 'WiFi,Kipas Angin,Kamar Mandi Luar,Parkir Motor,Dapur Bersama,Ruang Belajar', 'Jam malam 23.00, Tidak merokok di kamar'),
-(5, 'Kost Surabaya Asri',  'Campur','Kost modern dekat Universitas Airlangga dan RSUD Dr. Soetomo. Lingkungan tenang dan aman.', 'Jl. Dharmawangsa No. 56', 'Surabaya', -7.2690, 112.7578, 'WiFi,AC,Kamar Mandi Dalam,Parkir Motor,CCTV,Laundry', 'Tidak membawa tamu menginap, Kebersihan kamar tanggung jawab penghuni'),
-(5, 'Kost Merdeka Semarang','Putri','Kost putri nyaman di kawasan Simpang Lima Semarang. Dekat pusat perbelanjaan dan perkantoran.', 'Jl. Pandanaran No. 89', 'Semarang', -6.9932, 110.4203, 'WiFi,AC,Kamar Mandi Dalam,Parkir Motor,CCTV,Dapur Bersama', 'Khusus perempuan, Jam malam 22.00'),
+(4, 'Kost Surabaya Asri',  'Campur','Kost modern dekat Universitas Airlangga dan RSUD Dr. Soetomo. Lingkungan tenang dan aman.', 'Jl. Dharmawangsa No. 56', 'Surabaya', -7.2690, 112.7578, 'WiFi,AC,Kamar Mandi Dalam,Parkir Motor,CCTV,Laundry', 'Tidak membawa tamu menginap, Kebersihan kamar tanggung jawab penghuni'),
+(2, 'Kost Merdeka Semarang','Putri','Kost putri nyaman di kawasan Simpang Lima Semarang. Dekat pusat perbelanjaan dan perkantoran.', 'Jl. Pandanaran No. 89', 'Semarang', -6.9932, 110.4203, 'WiFi,AC,Kamar Mandi Dalam,Parkir Motor,CCTV,Dapur Bersama', 'Khusus perempuan, Jam malam 22.00'),
 (2, 'Kost Amikom Residence','Campur','Kost strategis 5 menit dari Universitas Amikom Yogyakarta. Fasilitas lengkap dan harga bersahabat untuk mahasiswa.', 'Jl. Ring Road Utara No. 5, Condongcatur', 'Yogyakarta', -7.7520, 110.4019, 'WiFi,AC,Kamar Mandi Dalam,Parkir Motor,Dapur Bersama,CCTV,Ruang Belajar', 'Jam malam 23.00, Tidak merokok di kamar, Bayar tepat waktu'),
 (3, 'Kost Malang Nyaman',  'Putra', 'Kost putra dekat Universitas Brawijaya dan UMM. Harga terjangkau dengan lingkungan bersih.', 'Jl. Veteran No. 12, Ketawanggede', 'Malang', -7.9428, 112.6131, 'WiFi,Kipas Angin,Kamar Mandi Luar,Parkir Motor,Dapur Bersama', 'Jam malam 22.30, Tidak boleh membawa hewan peliharaan');
 
