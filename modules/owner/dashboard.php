@@ -56,7 +56,7 @@ include '../../layouts/header.php';
             
             <div class="row mb-4">
                 <div class="col-md-6">
-                    <div class="card bg-success text-white shadow-sm border-0">
+                    <div class="card dashboard-card-pesanan shadow-sm border-0">
                         <div class="card-body">
                             <h5>Total Kost Saya</h5>
                             <h2 class="fw-bold"><?php echo $total_kost; ?></h2>
@@ -64,7 +64,7 @@ include '../../layouts/header.php';
                     </div>
                 </div>
                 <div class="col-md-6">
-                    <div class="card bg-info text-white shadow-sm border-0">
+                    <div class="card dashboard-card-favorit shadow-sm border-0">
                         <div class="card-body">
                             <h5>Pesanan Masuk</h5>
                             <h2 class="fw-bold"><?php echo $total_bookings; ?></h2>

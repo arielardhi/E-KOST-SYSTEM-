@@ -16,10 +16,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $role = $_POST['role'];
     $full_name = $_POST['full_name'];
+    $status = $_POST['status'];
 
     try {
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name) VALUES (?, ?, ?, ?, ?)");
-        $stmt->execute([$username, $email, $password, $role, $full_name]);
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, status) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->execute([$username, $email, $password, $role, $full_name, $status]);
         $success = "User berhasil ditambahkan! <a href='users.php'>Lihat daftar</a>";
     } catch (Exception $e) {
         $error = "Gagal menambah user: " . $e->getMessage();
@@ -69,9 +70,19 @@ include '../../layouts/header.php';
                                 </select>
                             </div>
                         </div>
-                        <div class="mb-4">
-                            <label class="form-label">Nama Lengkap</label>
-                            <input type="text" name="full_name" class="form-control" required>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nama Lengkap</label>
+                                <input type="text" name="full_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Status Verifikasi</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="verified">Verified</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="users.php" class="btn btn-light me-md-2">BATAL</a>

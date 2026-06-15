@@ -31,10 +31,12 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $query  = "SELECT k.*, u.full_name as owner_name,
-           (SELECT image_path FROM kost_foto WHERE kost_id = k.id AND is_main = 1 LIMIT 1) as main_image
+           (SELECT image_path FROM kost_foto WHERE kost_id = k.id AND is_main = 1 LIMIT 1) as main_image,
+           (SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id = k.id) as total_available_rooms
            FROM kost k
            JOIN users u ON k.owner_id = u.id
-           WHERE 1=1";
+           WHERE 1=1
+             AND (SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id = k.id) > 0";
 $params = [];
 if ($city)  { $query .= " AND k.city LIKE ?";       $params[] = "%$city%"; }
 if ($type)  { $query .= " AND k.type = ?";           $params[] = $type; }
@@ -242,7 +244,10 @@ $all_facilities = ['WiFi','AC','Parkir Motor','Parkir Mobil','Dapur Bersama','Ka
                         </div>
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title fw-700 text-truncate mb-1"><?= htmlspecialchars($kost['name']) ?></h5>
-                            <p class="text-muted small mb-2"><i class="bi bi-geo-alt me-1"></i><?= htmlspecialchars($kost['city']) ?></p>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-geo-alt me-1"></i><?= htmlspecialchars($kost['city']) ?>
+                                <span class="ms-2 badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.7rem;"><i class="bi bi-door-open-fill"></i> Sisa <?= $kost['total_available_rooms'] ?> kamar</span>
+                            </p>
                             <?php if ($kost['facilities']): ?>
                             <div class="mb-2 d-flex flex-wrap gap-1">
                                 <?php foreach (array_slice(explode(',', $kost['facilities']), 0, 3) as $f): ?>

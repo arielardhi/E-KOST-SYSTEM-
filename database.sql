@@ -11,6 +11,7 @@ CREATE TABLE users (
     full_name VARCHAR(100),
     phone VARCHAR(20),
     avatar VARCHAR(255),
+    status ENUM('pending', 'verified', 'rejected') NOT NULL DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -129,20 +130,20 @@ CREATE TABLE notifikasi (
 );
 
 -- Default Admin Account (password: admin123)
-INSERT INTO users (id, username, password, email, role, full_name) 
-VALUES (1, 'admin', '$2y$10$ddjRJLKdUTIl03cjRjgLYOBSrIp8NCCYytr2wTRWW8TloiBQNjVve', 'admin@ekost.com', 'admin', 'System Administrator');
+INSERT INTO users (id, username, password, email, role, full_name, status) 
+VALUES (1, 'admin', '$2y$10$ddjRJLKdUTIl03cjRjgLYOBSrIp8NCCYytr2wTRWW8TloiBQNjVve', 'admin@ekost.com', 'admin', 'System Administrator', 'verified');
 
 -- ══════════════════════════════════════════════════════
 -- SAMPLE DATA — Kost & Kamar
 -- ══════════════════════════════════════════════════════
 
 -- Sample Owners & Users (Exactly 3 Owners & 2 Users)
-INSERT INTO users (id, username, password, email, role, full_name, phone) VALUES
-(2, 'owner1', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner1@ekost.com', 'owner', 'Owner Satu', '081111111111'),
-(3, 'owner2', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner2@ekost.com', 'owner', 'Owner Dua',  '082222222222'),
-(4, 'owner3', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner3@ekost.com', 'owner', 'Owner Tiga', '083333333333'),
-(5, 'user1',  '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'user1@ekost.com',  'user',  'User Satu',  '084444444444'),
-(6, 'user2',  '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'user2@ekost.com',  'user',  'User Dua',   '085555555555');
+INSERT INTO users (id, username, password, email, role, full_name, phone, status) VALUES
+(2, 'owner1', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner1@ekost.com', 'owner', 'Owner Satu', '081111111111', 'verified'),
+(3, 'owner2', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner2@ekost.com', 'owner', 'Owner Dua',  '082222222222', 'verified'),
+(4, 'owner3', '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'owner3@ekost.com', 'owner', 'Owner Tiga', '083333333333', 'verified'),
+(5, 'user1',  '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'user1@ekost.com',  'user',  'User Satu',  '084444444444', 'verified'),
+(6, 'user2',  '$2y$10$L5HCXp707ijD.LsPLfsx/.hb8Whq.VBcv6RNlUUwOkaPMV75OFUDS', 'user2@ekost.com',  'user',  'User Dua',   '085555555555', 'verified');
 
 -- Sample Kost (10 data di berbagai kota)
 INSERT INTO kost (owner_id, name, type, description, address, city, latitude, longitude, facilities, rules) VALUES

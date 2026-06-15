@@ -14,11 +14,38 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     $id = $_GET['id'];
     $action = $_GET['action'];
     $status = ($action == 'confirm') ? 'confirmed' : 'cancelled';
+    $payment_status = ($action == 'confirm') ? 'verified' : 'rejected';
     
-    $stmt = $pdo->prepare("UPDATE booking b JOIN kamar km ON b.kamar_id = km.id JOIN kost k ON km.kost_id = k.id SET b.status = ? WHERE b.id = ? AND k.owner_id = ?");
-    $stmt->execute([$status, $id, $owner_id]);
-    header("Location: bookings.php?success=1");
-    exit();
+    try {
+        $pdo->beginTransaction();
+        
+        // Get the current status and kamar_id before updating
+        $status_stmt = $pdo->prepare("SELECT status, kamar_id FROM booking WHERE id = ?");
+        $status_stmt->execute([$id]);
+        $bk = $status_stmt->fetch();
+        
+        // Update booking status
+        $stmt = $pdo->prepare("UPDATE booking b JOIN kamar km ON b.kamar_id = km.id JOIN kost k ON km.kost_id = k.id SET b.status = ? WHERE b.id = ? AND k.owner_id = ?");
+        $stmt->execute([$status, $id, $owner_id]);
+        
+        // Update payment status (if payment exists for this booking)
+        $stmt = $pdo->prepare("UPDATE pembayaran p JOIN booking b ON p.booking_id = b.id JOIN kamar km ON b.kamar_id = km.id JOIN kost k ON km.kost_id = k.id SET p.status = ?, p.payment_date = NOW() WHERE b.id = ? AND k.owner_id = ?");
+        $stmt->execute([$payment_status, $id, $owner_id]);
+        
+        // If status changed from pending to cancelled (rejected), restore room count
+        if ($bk && $bk['status'] === 'pending' && $status === 'cancelled') {
+            $inc_stmt = $pdo->prepare("UPDATE kamar SET available_rooms = available_rooms + 1, status = 'available' WHERE id = ?");
+            $inc_stmt->execute([$bk['kamar_id']]);
+        }
+        
+        $pdo->commit();
+        header("Location: bookings.php?success=1");
+        exit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        header("Location: bookings.php?error=" . urlencode($e->getMessage()));
+        exit();
+    }
 }
 
 $stmt = $pdo->prepare("
@@ -97,22 +124,25 @@ include '../../layouts/header.php';
                                             <td>
                                                 <?php if ($b['payment_proof']): ?>
                                                     <a href="../../uploads/payments/<?php echo $b['payment_proof']; ?>" target="_blank" class="btn btn-sm btn-outline-info">Lihat Bukti</a>
-                                                    <br><small class="text-<?php echo $b['payment_status'] == 'verified' ? 'success' : 'warning'; ?>">
-                                                        <?php echo ucfirst($b['payment_status']); ?> oleh Admin
+                                                    <br><small class="text-<?php echo $b['payment_status'] == 'verified' ? 'success' : ($b['payment_status'] == 'rejected' ? 'danger' : 'warning'); ?>">
+                                                        <?php 
+                                                        if ($b['payment_status'] == 'verified') echo 'Terverifikasi';
+                                                        elseif ($b['payment_status'] == 'rejected') echo 'Ditolak';
+                                                        else echo 'Menunggu Verifikasi';
+                                                        ?>
                                                     </small>
                                                 <?php else: ?>
                                                     <span class="text-muted small">Belum upload</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td>
-                                                <?php if ($b['status'] == 'pending'): ?>
-                                                    <div class="btn-group">
+                                                <div class="btn-group">
+                                                    <a href="booking_manage.php?id=<?php echo $b['id']; ?>" class="btn btn-sm btn-outline-primary">Kelola</a>
+                                                    <?php if ($b['status'] == 'pending'): ?>
                                                         <a href="?action=confirm&id=<?php echo $b['id']; ?>" class="btn btn-sm btn-success" onclick="return confirm('Konfirmasi pesanan ini?')">Terima</a>
                                                         <a href="?action=cancel&id=<?php echo $b['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Batalkan pesanan ini?')">Tolak</a>
-                                                    </div>
-                                                <?php else: ?>
-                                                    -
-                                                <?php endif; ?>
+                                                    <?php endif; ?>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>

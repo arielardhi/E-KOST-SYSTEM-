@@ -7,39 +7,61 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
+// Handle AJAX POST requests for verifying / rejecting users
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $action = $input['action'] ?? $_POST['action'] ?? '';
+    $user_id = intval($input['user_id'] ?? $_POST['user_id'] ?? 0);
+    
+    if ($user_id > 0 && in_array($action, ['approve', 'reject'])) {
+        $status = ($action === 'approve') ? 'verified' : 'rejected';
+        
+        try {
+            $stmt = $pdo->prepare("UPDATE users SET status = ? WHERE id = ?");
+            $success = $stmt->execute([$status, $user_id]);
+            
+            header('Content-Type: application/json');
+            echo json_encode(['success' => $success]);
+            exit();
+        } catch (Exception $e) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+            exit();
+        }
+    }
+}
+
 // Get real users from DB
 $search  = trim($_GET['search'] ?? '');
 $filter  = $_GET['status'] ?? 'all';
 
-// For demo, we assign mock verification status based on user id parity
-$query  = "SELECT * FROM users WHERE 1=1";
+// Prepare query for active filters
+$query = "SELECT * FROM users WHERE 1=1";
 $params = [];
+
 if ($search) {
     $query .= " AND (username LIKE ? OR email LIKE ? OR full_name LIKE ?)";
     $s = "%$search%";
-    $params = [$s, $s, $s];
+    $params[] = $s;
+    $params[] = $s;
+    $params[] = $s;
 }
+
+if ($filter !== 'all') {
+    $query .= " AND status = ?";
+    $params[] = $filter;
+}
+
 $query .= " ORDER BY created_at DESC";
-$stmt = $pdo->prepare($query); $stmt->execute($params);
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
 $users = $stmt->fetchAll();
 
 // Stats
-$total  = count($users);
-// Demo: odd id = verified, even = pending, id divisible by 5 = rejected
-$pending  = count(array_filter($users, fn($u) => $u['id'] % 5 == 0));
-$rejected = count(array_filter($users, fn($u) => $u['id'] % 5 != 0 && $u['id'] % 2 == 0));
-$verified = $total - $pending - $rejected;
-
-// Filter by demo status
-if ($filter === 'pending')  { $users = array_filter($users, fn($u) => $u['id'] % 5 == 0); }
-elseif ($filter === 'rejected') { $users = array_filter($users, fn($u) => $u['id'] % 5 != 0 && $u['id'] % 2 == 0); }
-elseif ($filter === 'verified') { $users = array_filter($users, fn($u) => $u['id'] % 5 != 0 && $u['id'] % 2 != 0); }
-
-function demo_status($uid) {
-    if ($uid % 5 == 0) return ['pending','warning','Pending'];
-    if ($uid % 2 == 0) return ['rejected','danger','Rejected'];
-    return ['verified','success','Verified'];
-}
+$total    = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+$verified = $pdo->query("SELECT COUNT(*) FROM users WHERE status = 'verified'")->fetchColumn();
+$pending  = $pdo->query("SELECT COUNT(*) FROM users WHERE status = 'pending'")->fetchColumn();
+$rejected = $pdo->query("SELECT COUNT(*) FROM users WHERE status = 'rejected'")->fetchColumn();
 
 include '../../layouts/header.php';
 ?>
@@ -141,7 +163,10 @@ include '../../layouts/header.php';
                             $initials = strtoupper(substr($u['full_name'] ?: $u['username'], 0, 1));
                             $colors   = ['#00B4BA','#D97706','#059669','#DC2626','#5C4D78'];
                             $bg       = $colors[$u['id'] % 5];
-                            [$st, $badgeCls, $stLabel] = demo_status($u['id']);
+                            
+                            $st = $u['status'];
+                            $badgeCls = ($st === 'pending') ? 'warning' : (($st === 'verified') ? 'success' : 'danger');
+                            $stLabel = ($st === 'pending') ? 'Pending' : (($st === 'verified') ? 'Verified' : 'Rejected');
                         ?>
                         <tr class="table-row-hover">
                             <td>
@@ -186,7 +211,6 @@ include '../../layouts/header.php';
             </div>
         </div>
     </div>
-    <div class="text-muted small mt-2 text-end"><i class="bi bi-info-circle me-1"></i>Status verifikasi bersifat demo (simulasi UI)</div>
 </div>
 
 <script>
@@ -203,14 +227,39 @@ function doAction(action, userId, username) {
         cancelButtonText: 'Batal',
     }).then(result => {
         if (result.isConfirmed) {
-            Swal.fire({
-                icon: 'success',
-                title: isApprove ? 'User Diapprove!' : 'User Direject!',
-                text: `Status "${username}" telah diperbarui.`,
-                timer: 2000,
-                showConfirmButton: false,
-                timerProgressBar: true,
-            }).then(() => location.reload());
+            fetch('user_verify.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ action: action, user_id: userId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: isApprove ? 'User Diapprove!' : 'User Direject!',
+                        text: `Status "${username}" telah diperbarui.`,
+                        timer: 2000,
+                        showConfirmButton: false,
+                        timerProgressBar: true,
+                    }).then(() => location.reload());
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Terjadi kesalahan saat memperbarui status user.',
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Koneksi error: ' + error.message,
+                });
+            });
         }
     });
 }

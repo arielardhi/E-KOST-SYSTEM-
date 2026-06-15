@@ -25,10 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = $_POST['email'];
     $role = $_POST['role'];
     $full_name = $_POST['full_name'];
+    $status = $_POST['status'];
 
     try {
-        $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ?, role = ?, full_name = ? WHERE id = ?");
-        $stmt->execute([$username, $email, $role, $full_name, $id]);
+        $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ?, role = ?, full_name = ?, status = ? WHERE id = ?");
+        $stmt->execute([$username, $email, $role, $full_name, $status, $id]);
         $success = "Data user berhasil diperbarui! <a href='users.php'>Kembali ke daftar</a>";
         
         // Refresh data
@@ -70,7 +71,7 @@ include '../../layouts/header.php';
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Role</label>
                                 <select name="role" class="form-select" required>
                                     <option value="user" <?php echo $user['role'] == 'user' ? 'selected' : ''; ?>>Tenant (Pencari Kost)</option>
@@ -78,9 +79,17 @@ include '../../layouts/header.php';
                                     <option value="admin" <?php echo $user['role'] == 'admin' ? 'selected' : ''; ?>>Administrator</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label class="form-label">Nama Lengkap</label>
                                 <input type="text" name="full_name" class="form-control" value="<?php echo htmlspecialchars($user['full_name']); ?>" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Status Verifikasi</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="verified" <?php echo $user['status'] == 'verified' ? 'selected' : ''; ?>>Verified</option>
+                                    <option value="pending" <?php echo $user['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
+                                    <option value="rejected" <?php echo $user['status'] == 'rejected' ? 'selected' : ''; ?>>Rejected</option>
+                                </select>
                             </div>
                         </div>
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">

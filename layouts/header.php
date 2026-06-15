@@ -111,7 +111,6 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
                 ['label' => 'Kelola User', 'url' => $base_url . 'modules/admin/users.php', 'icon' => 'bi-people'],
                 ['label' => 'Verifikasi User', 'url' => $base_url . 'modules/admin/user_verify.php', 'icon' => 'bi-person-check'],
                 ['label' => 'Kelola Kost', 'url' => $base_url . 'modules/admin/kost.php', 'icon' => 'bi-house'],
-                ['label' => 'Pembayaran', 'url' => $base_url . 'modules/admin/payments.php', 'icon' => 'bi-credit-card'],
                 ['label' => 'Export Laporan', 'url' => $base_url . 'modules/admin/export_reports.php', 'icon' => 'bi-file-earmark-arrow-down'],
                 ['label' => 'Laporan Sistem', 'url' => $base_url . 'modules/admin/reports.php', 'icon' => 'bi-file-earmark-bar-graph'],
                 ['label' => 'Backup Data', 'url' => $base_url . 'modules/admin/backup.php', 'icon' => 'bi-database'],

@@ -19,7 +19,7 @@ if ($action === 'list') {
     $page      = max(1, (int)($_GET['page'] ?? 1));
     $offset    = ($page - 1) * $limit;
 
-    $where = ["1=1"]; $params = [];
+    $where = ["1=1", "(SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id = k.id) > 0"]; $params = [];
     if ($city)      { $where[] = "k.city LIKE ?";     $params[] = "%$city%"; }
     if ($type)      { $where[] = "k.type = ?";         $params[] = $type; }
     if ($max_price) { $where[] = "EXISTS (SELECT 1 FROM kamar WHERE kost_id=k.id AND price_per_month <= ?)"; $params[] = $max_price; }
@@ -36,7 +36,7 @@ if ($action === 'list') {
                u.full_name AS owner_name, u.phone AS owner_phone,
                (SELECT price_per_month FROM kamar WHERE kost_id=k.id ORDER BY price_per_month ASC  LIMIT 1) AS price_min,
                (SELECT price_per_month FROM kamar WHERE kost_id=k.id ORDER BY price_per_month DESC LIMIT 1) AS price_max,
-               (SELECT COUNT(*) FROM kamar WHERE kost_id=k.id AND status='available') AS rooms_available,
+               (SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id=k.id) AS rooms_available,
                (SELECT COUNT(*) FROM kamar WHERE kost_id=k.id) AS rooms_total,
                (SELECT image_path FROM kost_foto WHERE kost_id=k.id AND is_main=1 LIMIT 1) AS main_image,
                (SELECT ROUND(AVG(rating),1) FROM review WHERE kost_id=k.id) AS avg_rating,

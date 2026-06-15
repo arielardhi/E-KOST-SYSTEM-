@@ -23,14 +23,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user_id']  = $user['id'];
-        $_SESSION['username'] = $user['username'];
-        $_SESSION['role']     = $user['role'];
+        if ($user['status'] === 'pending') {
+            $error = "Akun Anda sedang dalam proses verifikasi oleh Admin.";
+        } elseif ($user['status'] === 'rejected') {
+            $error = "Pendaftaran akun Anda ditolak oleh Admin.";
+        } else {
+            $_SESSION['user_id']  = $user['id'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['role']     = $user['role'];
 
-        if ($user['role'] == 'admin')       header("Location: ../admin/dashboard.php");
-        elseif ($user['role'] == 'owner')   header("Location: ../owner/dashboard.php");
-        else                                header("Location: ../user/dashboard.php");
-        exit();
+            if ($user['role'] == 'admin')       header("Location: ../admin/dashboard.php");
+            elseif ($user['role'] == 'owner')   header("Location: ../owner/dashboard.php");
+            else                                header("Location: ../user/dashboard.php");
+            exit();
+        }
     } else {
         $error = "Username atau password salah!";
     }

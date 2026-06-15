@@ -65,15 +65,21 @@ if (isset($_GET['code'])) {
                         $user = $stmt->fetch();
 
                         if ($user) {
-                            // Jika user ada, login kan langsung
-                            $_SESSION['user_id']  = $user['id'];
-                            $_SESSION['username'] = $user['username'];
-                            $_SESSION['role']     = $user['role'];
+                            if ($user['status'] === 'pending') {
+                                $error = "Akun Anda sedang dalam proses verifikasi oleh Admin.";
+                            } elseif ($user['status'] === 'rejected') {
+                                $error = "Pendaftaran akun Anda ditolak oleh Admin.";
+                            } else {
+                                // Jika user ada, login kan langsung
+                                $_SESSION['user_id']  = $user['id'];
+                                $_SESSION['username'] = $user['username'];
+                                $_SESSION['role']     = $user['role'];
 
-                            // Update avatar jika kosong
-                            if (empty($user['avatar']) && !empty($avatar)) {
-                                $up = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
-                                $up->execute([$avatar, $user['id']]);
+                                // Update avatar jika kosong
+                                if (empty($user['avatar']) && !empty($avatar)) {
+                                    $up = $pdo->prepare("UPDATE users SET avatar = ? WHERE id = ?");
+                                    $up->execute([$avatar, $user['id']]);
+                                }
                             }
                         } else {
                             // Jika user belum terdaftar, buat akun baru
@@ -97,7 +103,7 @@ if (isset($_GET['code'])) {
                             $hashed_password = password_hash($random_pass, PASSWORD_DEFAULT);
 
                             // Simpan user baru
-                            $stmt_insert = $pdo->prepare("INSERT INTO users (username, password, email, role, full_name, avatar, phone) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                            $stmt_insert = $pdo->prepare("INSERT INTO users (username, password, email, role, full_name, avatar, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')");
                             $stmt_insert->execute([
                                 $username,
                                 $hashed_password,
@@ -105,27 +111,23 @@ if (isset($_GET['code'])) {
                                 $role,
                                 $name,
                                 $avatar,
-                                ''
+                                '',
                             ]);
 
-                            // Ambil data user yang baru dibuat
-                            $new_user_id = $pdo->lastInsertId();
-                            
-                            // Login kan user baru
-                            $_SESSION['user_id']  = $new_user_id;
-                            $_SESSION['username'] = $username;
-                            $_SESSION['role']     = $role;
+                            $error = "Registrasi berhasil! Akun Anda sedang dalam proses verifikasi oleh Admin.";
                         }
 
-                        // Redirect sesuai role
-                        if ($_SESSION['role'] === 'admin') {
-                            header("Location: ../admin/dashboard.php");
-                        } elseif ($_SESSION['role'] === 'owner') {
-                            header("Location: ../owner/dashboard.php");
-                        } else {
-                            header("Location: ../user/dashboard.php");
+                        if (empty($error)) {
+                            // Redirect sesuai role
+                            if ($_SESSION['role'] === 'admin') {
+                                header("Location: ../admin/dashboard.php");
+                            } elseif ($_SESSION['role'] === 'owner') {
+                                header("Location: ../owner/dashboard.php");
+                            } else {
+                                header("Location: ../user/dashboard.php");
+                            }
+                            exit();
                         }
-                        exit();
 
                     } catch (PDOException $e) {
                         $error = "Terjadi kesalahan database: " . $e->getMessage();

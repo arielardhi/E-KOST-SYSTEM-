@@ -24,6 +24,11 @@ if (!$booking) {
     exit();
 }
 
+// Get latest payment for this booking
+$pay_stmt = $pdo->prepare("SELECT * FROM pembayaran WHERE booking_id = ? ORDER BY id DESC LIMIT 1");
+$pay_stmt->execute([$id]);
+$payment = $pay_stmt->fetch();
+
 $success_msg = isset($_GET['success']) ? "Pesanan berhasil dibuat! Silakan lakukan pembayaran." : "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['payment_proof'])) {
@@ -41,6 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['payment_proof'])) {
         $stmt = $pdo->prepare("SELECT b.*, k.name as kost_name, km.room_name, km.price_per_month, o.full_name as owner_name FROM booking b JOIN kamar km ON b.kamar_id = km.id JOIN kost k ON km.kost_id = k.id JOIN users o ON k.owner_id = o.id WHERE b.id = ?");
         $stmt->execute([$id]);
         $booking = $stmt->fetch();
+        
+        // Refresh payment data
+        $pay_stmt->execute([$id]);
+        $payment = $pay_stmt->fetch();
     }
 }
 
@@ -94,22 +103,90 @@ include '../../layouts/header.php';
             <?php if ($booking['status'] == 'pending'): ?>
                 <div class="card shadow-sm border-0 mb-4">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3">Instruksi Pembayaran</h5>
-                        <p>Silakan transfer sesuai total harga ke rekening berikut:</p>
-                        <div class="bg-light p-3 rounded mb-4">
-                            <p class="mb-1"><strong>Bank BCA</strong></p>
-                            <p class="mb-1">No. Rekening: 1234567890</p>
-                            <p class="mb-0">A/N: E-KOST SYSTEM</p>
-                        </div>
-                        
-                        <h5 class="fw-bold mb-3">Upload Bukti Pembayaran</h5>
-                        <form method="POST" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <input type="file" name="payment_proof" class="form-control" required accept="image/*">
-                                <small class="text-muted">Format: JPG, PNG. Maksimal 2MB.</small>
+                        <?php if ($payment): ?>
+                            <?php if ($payment['status'] == 'pending'): ?>
+                                <h5 class="fw-bold mb-3 text-warning"><i class="bi bi-clock-history me-2"></i>Menunggu Verifikasi</h5>
+                                <div class="alert alert-warning mb-4">
+                                    <i class="bi bi-info-circle-fill me-2"></i> Bukti pembayaran Anda telah diunggah dan sedang menunggu proses verifikasi oleh Admin.
+                                </div>
+                                <div class="mb-3">
+                                    <p class="text-muted mb-2 fw-semibold">Bukti Transfer yang Diunggah:</p>
+                                    <a href="../../uploads/payments/<?php echo htmlspecialchars($payment['payment_proof']); ?>" target="_blank">
+                                        <img src="../../uploads/payments/<?php echo htmlspecialchars($payment['payment_proof']); ?>" class="img-thumbnail rounded shadow-sm" style="max-height: 250px; object-fit: contain; background: #fafafa;">
+                                    </a>
+                                </div>
+                            <?php elseif ($payment['status'] == 'rejected'): ?>
+                                <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-exclamation-octagon-fill me-2"></i>Bukti Pembayaran Ditolak</h5>
+                                <div class="alert alert-danger mb-4">
+                                    <i class="bi bi-x-circle-fill me-2"></i> Bukti pembayaran sebelumnya tidak disetujui atau ditolak oleh Admin. Silakan lakukan transfer ulang atau unggah bukti pembayaran yang valid.
+                                </div>
+                                
+                                <h5 class="fw-bold mb-3">Instruksi Pembayaran</h5>
+                                <p>Silakan transfer sesuai total harga ke rekening berikut:</p>
+                                <div class="bg-light p-3 rounded mb-4 border border-1 border-danger-subtle">
+                                    <p class="mb-1"><strong>Bank BCA</strong></p>
+                                    <p class="mb-1">No. Rekening: 1234567890</p>
+                                    <p class="mb-0">A/N: E-KOST SYSTEM</p>
+                                </div>
+                                
+                                <h5 class="fw-bold mb-3">Upload Bukti Pembayaran Baru</h5>
+                                <form method="POST" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <input type="file" name="payment_proof" class="form-control" required accept="image/*">
+                                        <small class="text-muted d-block mt-1">Format: JPG, JPEG, PNG. Maksimal 2MB.</small>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-2"></i>Unggah Bukti Baru</button>
+                                </form>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            <h5 class="fw-bold mb-3">Instruksi Pembayaran</h5>
+                            <p>Silakan transfer sesuai total harga ke rekening berikut:</p>
+                            <div class="bg-light p-3 rounded mb-4">
+                                <p class="mb-1"><strong>Bank BCA</strong></p>
+                                <p class="mb-1">No. Rekening: 1234567890</p>
+                                <p class="mb-0">A/N: E-KOST SYSTEM</p>
                             </div>
-                            <button type="submit" class="btn btn-primary">Unggah Bukti</button>
-                        </form>
+                            
+                            <h5 class="fw-bold mb-3">Upload Bukti Pembayaran</h5>
+                            <form method="POST" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <input type="file" name="payment_proof" class="form-control" required accept="image/*">
+                                    <small class="text-muted d-block mt-1">Format: JPG, JPEG, PNG. Maksimal 2MB.</small>
+                                </div>
+                                <button type="submit" class="btn btn-primary"><i class="bi bi-upload me-2"></i>Unggah Bukti</button>
+                            </form>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php elseif ($booking['status'] == 'confirmed'): ?>
+                <div class="card shadow-sm border-0 mb-4 border-start border-4 border-success">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3 text-success"><i class="bi bi-check-circle-fill me-2"></i>Pembayaran Terverifikasi</h5>
+                        <div class="alert alert-success mb-3">
+                            <i class="bi bi-check-circle-fill me-2"></i> Pemesanan Anda telah dikonfirmasi dan pembayaran telah berhasil diverifikasi oleh Admin. Silakan hubungi pemilik kost melalui menu Chat untuk koordinasi lebih lanjut.
+                        </div>
+                        <?php if ($payment): ?>
+                            <div class="mt-3">
+                                <p class="text-muted mb-2 fw-semibold">Bukti Transfer:</p>
+                                <a href="../../uploads/payments/<?php echo htmlspecialchars($payment['payment_proof']); ?>" target="_blank">
+                                    <img src="../../uploads/payments/<?php echo htmlspecialchars($payment['payment_proof']); ?>" class="img-thumbnail rounded" style="max-height: 180px; object-fit: contain;">
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php elseif ($booking['status'] == 'cancelled'): ?>
+                <div class="card shadow-sm border-0 mb-4 border-start border-4 border-danger">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-x-circle-fill me-2"></i>Pemesanan Dibatalkan</h5>
+                        <p class="mb-0 text-muted">Pemesanan kost ini telah dibatalkan. Jika Anda merasa ini adalah kesalahan, hubungi layanan dukungan kami atau pemilik kost.</p>
+                    </div>
+                </div>
+            <?php elseif ($booking['status'] == 'completed'): ?>
+                <div class="card shadow-sm border-0 mb-4 border-start border-4 border-info">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3 text-info"><i class="bi bi-check-all me-2"></i>Pemesanan Selesai</h5>
+                        <p class="mb-0 text-muted">Masa sewa atau pesanan ini telah selesai. Terima kasih telah menggunakan layanan E-Kost System!</p>
                     </div>
                 </div>
             <?php endif; ?>

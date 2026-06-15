@@ -30,9 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($stmt->fetch()) {
         $error = "Username atau Email sudah terdaftar!";
     } else {
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, phone) VALUES (?, ?, ?, ?, ?, ?)");
-        if ($stmt->execute([$username, $email, $password, $role, $full_name, $phone])) {
-            $success = "Registrasi berhasil!";
+        $status = ($role === 'admin') ? 'verified' : 'pending';
+        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        if ($stmt->execute([$username, $email, $password, $role, $full_name, $phone, $status])) {
+            $success = "Registrasi berhasil! Akun Anda sedang dalam proses verifikasi oleh Admin.";
         } else {
             $error = "Terjadi kesalahan saat registrasi.";
         }
@@ -406,7 +407,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php if ($success): ?>
                 <div class="success-box">
                     <i class="bi bi-check-circle-fill"></i>
-                    Registrasi berhasil! <a href="login.php" style="color:#5BC9CC;font-weight:600;margin-left:6px;">Login →</a>
+                    <?= $success ?> <a href="login.php" style="color:#5BC9CC;font-weight:600;margin-left:6px;">Login →</a>
                 </div>
             <?php endif; ?>
 

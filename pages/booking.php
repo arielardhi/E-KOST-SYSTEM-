@@ -44,22 +44,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $service_fee = 10000; 
         $total_price = ($room['price_per_month'] * $duration) + $service_fee;
 
-        $stmt = $pdo->prepare("INSERT INTO booking (user_id, kamar_id, start_date, duration_months, total_price, status) VALUES (?, ?, ?, ?, ?, 'pending')");
-        if ($stmt->execute([$user_id, $room_id, $start_date, $duration, $total_price])) {
+        try {
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare("INSERT INTO booking (user_id, kamar_id, start_date, duration_months, total_price, status) VALUES (?, ?, ?, ?, ?, 'pending')");
+            $stmt->execute([$user_id, $room_id, $start_date, $duration, $total_price]);
             $booking_id = $pdo->lastInsertId();
-            
-            // Optionally, create a default system notification for the user
+
+            // Decrement available rooms
+            $update_stmt = $pdo->prepare("UPDATE kamar SET available_rooms = available_rooms - 1 WHERE id = ?");
+            $update_stmt->execute([$room_id]);
+
+            // Update status to full if no rooms left
+            $status_stmt = $pdo->prepare("UPDATE kamar SET status = 'full' WHERE id = ? AND available_rooms <= 0");
+            $status_stmt->execute([$room_id]);
+
+            // Create notification
             try {
                 $notif_stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, message, is_read) VALUES (?, ?, 0)");
                 $notif_stmt->execute([$user_id, "Pesanan baru #" . $booking_id . " berhasil dibuat. Silakan selesaikan pembayaran."]);
-            } catch (Exception $e) {
-                // Fail silently
+            } catch (Exception $ne) {
+                // Fail notification silently
             }
+
+            $pdo->commit();
 
             header("Location: ../modules/user/booking_detail.php?id=$booking_id&success=1");
             exit();
-        } else {
-            $error = "Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi.";
+        } catch (Exception $e) {
+            $pdo->rollBack();
+            $error = "Terjadi kesalahan saat memproses pesanan Anda. Silakan coba lagi. Detail: " . $e->getMessage();
         }
     }
 }

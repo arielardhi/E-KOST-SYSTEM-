@@ -52,7 +52,7 @@ include '../../layouts/header.php';
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($kosts as $kost): 
-                                        $stmt = $pdo->prepare("SELECT COUNT(*) FROM kamar WHERE kost_id = ?");
+                                        $stmt = $pdo->prepare("SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id = ?");
                                         $stmt->execute([$kost['id']]);
                                         $room_count = $stmt->fetchColumn();
                                     ?>
