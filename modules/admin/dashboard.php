@@ -11,7 +11,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 $total_users    = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $total_kost     = $pdo->query("SELECT COUNT(*) FROM kost")->fetchColumn();
 $total_bookings = $pdo->query("SELECT COUNT(*) FROM booking")->fetchColumn();
-$total_revenue  = $pdo->query("SELECT COALESCE(SUM(amount),0) FROM pembayaran WHERE status='verified'")->fetchColumn();
+$total_revenue  = $pdo->query("SELECT COUNT(*) * 10000 FROM pembayaran WHERE status='verified'")->fetchColumn();
 
 // Monthly booking data (last 6 months)
 $booking_monthly = $pdo->query("
@@ -20,9 +20,9 @@ $booking_monthly = $pdo->query("
     GROUP BY y,m,month ORDER BY y,m
 ")->fetchAll();
 
-// Monthly revenue data
+// Monthly revenue data (calculated as number of verified payments * 10,000 IDR admin fee)
 $revenue_monthly = $pdo->query("
-    SELECT DATE_FORMAT(created_at,'%b %Y') as month, MONTH(created_at) as m, YEAR(created_at) as y, COALESCE(SUM(amount),0) as total
+    SELECT DATE_FORMAT(created_at,'%b %Y') as month, MONTH(created_at) as m, YEAR(created_at) as y, COUNT(*) * 10000 as total
     FROM pembayaran WHERE status='verified' AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
     GROUP BY y,m,month ORDER BY y,m
 ")->fetchAll();
@@ -111,7 +111,7 @@ include '../../layouts/header.php';
                 <div class="d-flex align-items-center gap-3">
                     <div class="stat-icon" style="background:rgba(255,255,255,.15);color:#fff"><i class="bi bi-cash-coin"></i></div>
                     <div>
-                        <div class="stat-val text-white" style="font-size:1.2rem">Rp <?= number_format($total_revenue/1000000, 1) ?>Jt</div>
+                        <div class="stat-val text-white" style="font-size:1.2rem">Rp <?= $total_revenue >= 1000000 ? number_format($total_revenue/1000000, 1) . 'Jt' : number_format($total_revenue, 0, ',', '.') ?></div>
                         <div class="stat-label" style="color:rgba(255,255,255,.8)">Pendapatan</div>
                     </div>
                 </div>
@@ -245,7 +245,7 @@ new Chart(document.getElementById('revenueChart'), {
         responsive: true, maintainAspectRatio: true,
         plugins: { legend: { display: false } },
         scales: {
-            y: { beginAtZero: true, grid: { color: commonGridColor }, ticks: { callback: v => 'Rp ' + (v/1000000).toFixed(1) + 'Jt' } },
+            y: { beginAtZero: true, grid: { color: commonGridColor }, ticks: { callback: v => v >= 1000000 ? 'Rp ' + (v/1000000).toFixed(1) + 'Jt' : 'Rp ' + v.toLocaleString('id-ID') } },
             x: { grid: { display: false } }
         }
     }

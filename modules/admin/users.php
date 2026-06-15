@@ -38,7 +38,17 @@ include '../../layouts/header.php';
                         <?php foreach ($users as $user): ?>
                             <tr>
                                 <td>
-                                    <img src="<?php echo $user['avatar'] ? $base_url . 'uploads/avatars/' . $user['avatar'] : 'https://via.placeholder.com/40?text=U'; ?>" class="border border-2 border-dark" style="width: 40px; height: 40px; object-fit: cover;">
+                                    <?php
+                                    $avatar_url = 'https://via.placeholder.com/40?text=U';
+                                    if ($user['avatar']) {
+                                        if (filter_var($user['avatar'], FILTER_VALIDATE_URL)) {
+                                            $avatar_url = $user['avatar'];
+                                        } else {
+                                            $avatar_url = $base_url . 'uploads/avatars/' . $user['avatar'];
+                                        }
+                                    }
+                                    ?>
+                                    <img src="<?php echo $avatar_url; ?>" class="border border-2 border-dark" style="width: 40px; height: 40px; object-fit: cover;">
                                 </td>
                                 <td class="fw-bold"><?php echo $user['username']; ?></td>
                                 <td><?php echo $user['full_name']; ?></td>

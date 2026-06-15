@@ -80,7 +80,17 @@ include '../../layouts/header.php';
                     <div class="row align-items-center mb-5">
                         <div class="col-md-3 text-center mb-3 mb-md-0">
                             <div class="position-relative d-inline-block">
-                                <img src="<?php echo $user['avatar'] ? $base_url . 'uploads/avatars/' . $user['avatar'] : 'https://via.placeholder.com/150?text=No+Avatar'; ?>" 
+                                <?php
+                                $avatar_url = 'https://via.placeholder.com/150?text=No+Avatar';
+                                if ($user['avatar']) {
+                                    if (filter_var($user['avatar'], FILTER_VALIDATE_URL)) {
+                                        $avatar_url = $user['avatar'];
+                                    } else {
+                                        $avatar_url = $base_url . 'uploads/avatars/' . $user['avatar'];
+                                    }
+                                }
+                                ?>
+                                <img src="<?php echo $avatar_url; ?>" 
                                      class="border border-4 border-dark shadow-sm" 
                                      style="width: 150px; height: 150px; object-fit: cover;">
                             </div>

@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 
 // Get monthly revenue data
 $revenue_data = $pdo->query("
-    SELECT DATE_FORMAT(created_at, '%M %Y') as month, SUM(amount) as total 
+    SELECT DATE_FORMAT(created_at, '%M %Y') as month, COUNT(*) * 10000 as total 
     FROM pembayaran 
     WHERE status = 'verified' 
     GROUP BY month 

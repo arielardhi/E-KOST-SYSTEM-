@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'admin') {
 
 // Stats for summary cards
 $total_bookings = $pdo->query("SELECT COUNT(*) FROM booking")->fetchColumn();
-$total_revenue  = $pdo->query("SELECT COALESCE(SUM(amount),0) FROM pembayaran WHERE status='verified'")->fetchColumn();
+$total_revenue  = $pdo->query("SELECT COUNT(*) * 10000 FROM pembayaran WHERE status='verified'")->fetchColumn();
 $total_users    = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $total_kost     = $pdo->query("SELECT COUNT(*) FROM kost")->fetchColumn();
 

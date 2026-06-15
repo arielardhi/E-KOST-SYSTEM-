@@ -372,8 +372,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 function startGoogleAuth() {
     const clientId = "<?php echo GOOGLE_CLIENT_ID; ?>";
     const redirectUri = "<?php echo GOOGLE_REDIRECT_URI; ?>";
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20profile%20email&state=user`;
-    window.location.href = authUrl;
+    if (clientId === 'YOUR_GOOGLE_CLIENT_ID') {
+        window.location.href = `mock_google.php?redirect_uri=${encodeURIComponent(redirectUri)}&state=user`;
+    } else {
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20profile%20email&state=user`;
+        window.location.href = authUrl;
+    }
 }
 </script>
 </body>

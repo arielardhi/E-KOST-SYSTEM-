@@ -203,8 +203,17 @@ $avg_rating = round($rating_stats['avg_rating'] ?? 0, 1);
                     <?php else: ?>
                         <div class="review-list">
                             <?php foreach ($reviews as $rev): ?>
-                                <div class="d-flex gap-3 mb-4 p-3 border border-2 border-dark bg-white" style="box-shadow: 4px 4px 0 #000;">
-                                    <img src="<?php echo $rev['avatar'] ? $base_url . 'uploads/avatars/' . $rev['avatar'] : 'https://via.placeholder.com/50?text=U'; ?>" 
+                                    <?php
+                                    $avatar_url = 'https://via.placeholder.com/50?text=U';
+                                    if ($rev['avatar']) {
+                                        if (filter_var($rev['avatar'], FILTER_VALIDATE_URL)) {
+                                            $avatar_url = $rev['avatar'];
+                                        } else {
+                                            $avatar_url = $base_url . 'uploads/avatars/' . $rev['avatar'];
+                                        }
+                                    }
+                                    ?>
+                                    <img src="<?php echo $avatar_url; ?>" 
                                          class="border border-2 border-dark" style="width: 50px; height: 50px; object-fit: cover;">
                                     <div class="flex-grow-1">
                                         <div class="d-flex justify-content-between">
