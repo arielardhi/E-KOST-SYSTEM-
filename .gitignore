@@ -1,0 +1,10 @@
+# Ignore user uploads
+uploads/kost/kost_*
+uploads/payments/pay_*
+uploads/avatars/avatar_*
+uploads/barang/barang_*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+*.log

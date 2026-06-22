@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_id'])) {
 
 $id = $_GET['id'] ?? 0;
 $stmt = $pdo->prepare("
-    SELECT b.*, k.name as kost_name, km.room_name, km.price_per_month, o.full_name as owner_name 
+    SELECT b.*, k.owner_id, k.name as kost_name, km.room_name, km.price_per_month, o.full_name as owner_name 
     FROM booking b 
     JOIN kamar km ON b.kamar_id = km.id 
     JOIN kost k ON km.kost_id = k.id 
@@ -41,9 +41,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['payment_proof'])) {
         $stmt = $pdo->prepare("INSERT INTO pembayaran (booking_id, user_id, amount, payment_proof, status, payment_date) VALUES (?, ?, ?, ?, 'pending', NOW())");
         $stmt->execute([$id, $_SESSION['user_id'], $booking['total_price'], $file_name]);
         
+        // Notify owner
+        try {
+            $owner_msg = "Pembayaran sebesar Rp " . number_format($booking['total_price'], 0, ',', '.') . " untuk Booking #" . $id . " (" . $booking['room_name'] . " - " . $booking['kost_name'] . ") telah diunggah dan menunggu verifikasi Anda.";
+            $notif_stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, message, is_read) VALUES (?, ?, 0)");
+            $notif_stmt->execute([$booking['owner_id'], $owner_msg]);
+        } catch (Exception $ne) {}
+        
         $success_msg = "Bukti pembayaran berhasil diunggah. Menunggu verifikasi.";
         // Refresh booking data
-        $stmt = $pdo->prepare("SELECT b.*, k.name as kost_name, km.room_name, km.price_per_month, o.full_name as owner_name FROM booking b JOIN kamar km ON b.kamar_id = km.id JOIN kost k ON km.kost_id = k.id JOIN users o ON k.owner_id = o.id WHERE b.id = ?");
+        $stmt = $pdo->prepare("SELECT b.*, k.owner_id, k.name as kost_name, km.room_name, km.price_per_month, o.full_name as owner_name FROM booking b JOIN kamar km ON b.kamar_id = km.id JOIN kost k ON km.kost_id = k.id JOIN users o ON k.owner_id = o.id WHERE b.id = ?");
         $stmt->execute([$id]);
         $booking = $stmt->fetch();
         

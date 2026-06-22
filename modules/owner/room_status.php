@@ -6,6 +6,32 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] != 'owner') {
 }
 $owner_id = $_SESSION['user_id'];
 
+// Handle status updates (toggle maintenance)
+if (isset($_GET['action']) && isset($_GET['room_id'])) {
+    $r_id = (int)$_GET['room_id'];
+    $act = $_GET['action'];
+    
+    // Verify room ownership
+    $check = $pdo->prepare("
+        SELECT km.id, km.status, km.kost_id 
+        FROM kamar km 
+        JOIN kost k ON km.kost_id = k.id 
+        WHERE km.id = ? AND k.owner_id = ?
+    ");
+    $check->execute([$r_id, $owner_id]);
+    $room_to_update = $check->fetch();
+    
+    if ($room_to_update) {
+        $new_status = ($act === 'maintenance') ? 'maintenance' : 'available';
+        
+        $update_stmt = $pdo->prepare("UPDATE kamar SET status = ? WHERE id = ?");
+        $update_stmt->execute([$new_status, $r_id]);
+        
+        header("Location: room_status.php?kost_id=" . $room_to_update['kost_id'] . "&success_status=1");
+        exit();
+    }
+}
+
 // Get owner's kosts
 $kosts = $pdo->prepare("SELECT id, name, city FROM kost WHERE owner_id = ? ORDER BY name");
 $kosts->execute([$owner_id]); $kosts = $kosts->fetchAll();
@@ -25,10 +51,9 @@ if ($filter_kost) {
     $rooms = $stmt->fetchAll();
 }
 
-// Demo: assign maintenance status to rooms with id % 3 == 0
-function room_status_demo($room) {
-    if ($room['id'] % 3 == 0) return 'maintenance';
-    if ($room['status'] == 'full' || $room['active_bookings'] > 0) return 'full';
+function get_room_status($room) {
+    if ($room['status'] === 'maintenance') return 'maintenance';
+    if ($room['status'] === 'full' || $room['available_rooms'] <= 0) return 'full';
     return 'available';
 }
 
@@ -36,10 +61,15 @@ $count_available    = 0;
 $count_full         = 0;
 $count_maintenance  = 0;
 foreach ($rooms as $r) {
-    $st = room_status_demo($r);
+    $st = get_room_status($r);
     if ($st === 'available') $count_available++;
     elseif ($st === 'full') $count_full++;
     else $count_maintenance++;
+}
+
+$success_msg = '';
+if (isset($_GET['success_status'])) {
+    $success_msg = "Status kamar berhasil diperbarui.";
 }
 
 include '../../layouts/header.php';
@@ -63,6 +93,13 @@ include '../../layouts/header.php';
 </style>
 
 <div class="container py-4">
+
+    <?php if ($success_msg): ?>
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> <?= $success_msg ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
 
     <div class="mb-4">
         <h2 class="fw-bold mb-1" style="color:var(--dark)"><i class="bi bi-door-closed-fill me-2" style="color:var(--primary)"></i>Status Kamar</h2>
@@ -123,7 +160,7 @@ include '../../layouts/header.php';
     <?php else: ?>
     <div class="row g-3">
         <?php foreach ($rooms as $room):
-            $st = room_status_demo($room);
+            $st = get_room_status($room);
             $st_config = [
                 'available'   => ['label'=>'Kosong',     'color'=>'#059669','bg'=>'rgba(5,150,105,.1)',  'icon'=>'bi-door-open-fill'],
                 'full'        => ['label'=>'Terisi',     'color'=>'#DC2626','bg'=>'rgba(220,38,38,.1)',  'icon'=>'bi-door-closed-fill'],
@@ -162,9 +199,9 @@ include '../../layouts/header.php';
                 <div class="card-footer d-flex gap-2 justify-content-between">
                     <a href="room_edit.php?id=<?= $room['id'] ?>" class="btn btn-sm btn-outline-secondary flex-grow-1"><i class="bi bi-pencil me-1"></i>Edit</a>
                     <?php if ($st === 'maintenance'): ?>
-                    <button class="btn btn-sm btn-warning flex-grow-1 text-white" onclick="alert('Demo: Tandai selesai maintenance')"><i class="bi bi-check-lg me-1"></i>Selesai</button>
+                    <a href="?action=available&room_id=<?= $room['id'] ?>&kost_id=<?= $filter_kost ?>" class="btn btn-sm btn-warning flex-grow-1 text-white" onclick="return confirm('Tandai selesai maintenance?')"><i class="bi bi-check-lg me-1"></i>Selesai</a>
                     <?php elseif ($st === 'available'): ?>
-                    <button class="btn btn-sm btn-outline-warning flex-grow-1" onclick="alert('Demo: Tandai maintenance')"><i class="bi bi-tools me-1"></i>Maintenance</button>
+                    <a href="?action=maintenance&room_id=<?= $room['id'] ?>&kost_id=<?= $filter_kost ?>" class="btn btn-sm btn-outline-warning flex-grow-1" onclick="return confirm('Tandai sedang maintenance?')"><i class="bi bi-tools me-1"></i>Maintenance</a>
                     <?php endif; ?>
                 </div>
             </div>
@@ -172,7 +209,7 @@ include '../../layouts/header.php';
         <?php endforeach; ?>
     </div>
     <?php endif; ?>
-    <div class="text-muted small mt-3"><i class="bi bi-info-circle me-1"></i>Status "Maintenance" bersifat demo UI. Gunakan tombol Edit untuk mengubah status kamar.</div>
+    <div class="text-muted small mt-3"><i class="bi bi-info-circle me-1"></i>Gunakan tombol di atas untuk mengubah status Maintenance secara instan, atau gunakan tombol Edit untuk mengubah detail kamar lainnya.</div>
 </div>
 
 <?php include '../../layouts/footer.php'; ?>

@@ -60,6 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['lease_action'])) {
                 // Increment available rooms and set kamar to available
                 $inc_stmt = $pdo->prepare("UPDATE kamar SET available_rooms = available_rooms + 1, status = 'available' WHERE id = ?");
                 $inc_stmt->execute([$bk['kamar_id']]);
+                
+                // Notify tenant
+                $msg = "Masa sewa Anda untuk " . $booking['room_name'] . " di " . $booking['kost_name'] . " telah selesai (check-out). Terima kasih telah menyewa!";
+                $notif_stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, message, is_read) VALUES (?, ?, 0)");
+                $notif_stmt->execute([$booking['user_id'], $msg]);
             }
             
             $pdo->commit();
@@ -92,6 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['lease_action'])) {
                     // Update booking
                     $stmt = $pdo->prepare("UPDATE booking SET duration_months = ?, total_price = ? WHERE id = ?");
                     $stmt->execute([$new_duration, $new_price, $id]);
+                    
+                    // Notify tenant
+                    $msg = "Masa sewa Anda untuk " . $booking['room_name'] . " di " . $booking['kost_name'] . " telah diperpanjang sebanyak " . $extra_months . " bulan oleh pemilik kost.";
+                    $notif_stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, message, is_read) VALUES (?, ?, 0)");
+                    $notif_stmt->execute([$booking['user_id'], $msg]);
                 }
                 
                 $pdo->commit();
@@ -132,6 +142,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['action'])) {
             $inc_stmt = $pdo->prepare("UPDATE kamar SET available_rooms = available_rooms + 1, status = 'available' WHERE id = ?");
             $inc_stmt->execute([$bk['kamar_id']]);
         }
+        
+        // Send notification to tenant
+        $msg = ($status === 'confirmed') 
+            ? "Pemesanan Anda untuk " . $booking['room_name'] . " di " . $booking['kost_name'] . " telah DISETUJUI oleh pemilik kost."
+            : "Pemesanan Anda untuk " . $booking['room_name'] . " di " . $booking['kost_name'] . " telah DITOLAK/DIBATALKAN oleh pemilik kost.";
+        
+        $notif_stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, message, is_read) VALUES (?, ?, 0)");
+        $notif_stmt->execute([$booking['user_id'], $msg]);
         
         $pdo->commit();
         header("Location: booking_manage.php?id=" . $id . "&success=1");

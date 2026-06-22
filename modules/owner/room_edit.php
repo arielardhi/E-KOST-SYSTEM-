@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $available = 1;
     }
     
-    if ($available <= 0) {
+    if ($available <= 0 && $status != 'maintenance') {
         $status = 'full';
     }
 
@@ -130,6 +130,7 @@ include '../../layouts/header.php';
                                 <select name="status" class="form-select" required>
                                     <option value="available" <?php echo $room['status'] == 'available' ? 'selected' : ''; ?>>Available</option>
                                     <option value="full" <?php echo $room['status'] == 'full' ? 'selected' : ''; ?>>Full</option>
+                                    <option value="maintenance" <?php echo $room['status'] == 'maintenance' ? 'selected' : ''; ?>>Maintenance</option>
                                 </select>
                             </div>
                         </div>

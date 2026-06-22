@@ -17,7 +17,7 @@ $user_info = $stmt_user->fetch();
 $room_id = $_GET['room_id'] ?? 0;
 // Fetch detailed room info, kost info, and main image
 $stmt = $pdo->prepare("
-    SELECT km.*, k.name as kost_name, k.address, k.city, k.type, k.facilities as kost_facilities,
+    SELECT km.*, k.owner_id, k.name as kost_name, k.address, k.city, k.type, k.facilities as kost_facilities,
            (SELECT image_path FROM kost_foto WHERE kost_id = k.id AND is_main = 1 LIMIT 1) as main_image
     FROM kamar km 
     JOIN kost k ON km.kost_id = k.id 
@@ -63,6 +63,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             try {
                 $notif_stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, message, is_read) VALUES (?, ?, 0)");
                 $notif_stmt->execute([$user_id, "Pesanan baru #" . $booking_id . " berhasil dibuat. Silakan selesaikan pembayaran."]);
+                
+                // Notify Owner
+                $owner_msg = "Booking baru #" . $booking_id . " dari " . ($user_info['full_name'] ?: $_SESSION['username']) . " masuk untuk " . $room['room_name'] . " di " . $room['kost_name'] . ".";
+                $notif_stmt->execute([$room['owner_id'], $owner_msg]);
             } catch (Exception $ne) {
                 // Fail notification silently
             }

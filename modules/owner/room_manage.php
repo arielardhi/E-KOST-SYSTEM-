@@ -79,7 +79,10 @@ include '../../layouts/header.php';
                                             <td>Rp <?php echo number_format($room['price_per_month'], 0, ',', '.'); ?></td>
                                             <td><?php echo $room['available_rooms']; ?></td>
                                             <td>
-                                                <span class="badge bg-<?php echo $room['status'] == 'available' ? 'success' : 'danger'; ?>">
+                                                <span class="badge bg-<?php 
+                                                    echo $room['status'] == 'available' ? 'success' : 
+                                                        ($room['status'] == 'maintenance' ? 'warning' : 'danger'); 
+                                                ?>">
                                                     <?php echo ucfirst($room['status']); ?>
                                                 </span>
                                             </td>

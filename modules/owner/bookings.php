@@ -19,8 +19,14 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
     try {
         $pdo->beginTransaction();
         
-        // Get the current status and kamar_id before updating
-        $status_stmt = $pdo->prepare("SELECT status, kamar_id FROM booking WHERE id = ?");
+        // Get booking details, including user_id, kost name, and room name
+        $status_stmt = $pdo->prepare("
+            SELECT b.status, b.kamar_id, b.user_id, k.name as kost_name, km.room_name 
+            FROM booking b
+            JOIN kamar km ON b.kamar_id = km.id
+            JOIN kost k ON km.kost_id = k.id
+            WHERE b.id = ?
+        ");
         $status_stmt->execute([$id]);
         $bk = $status_stmt->fetch();
         
@@ -36,6 +42,16 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
         if ($bk && $bk['status'] === 'pending' && $status === 'cancelled') {
             $inc_stmt = $pdo->prepare("UPDATE kamar SET available_rooms = available_rooms + 1, status = 'available' WHERE id = ?");
             $inc_stmt->execute([$bk['kamar_id']]);
+        }
+        
+        // Send notification to tenant
+        if ($bk) {
+            $msg = ($status === 'confirmed') 
+                ? "Pemesanan Anda untuk " . $bk['room_name'] . " di " . $bk['kost_name'] . " telah DISETUJUI oleh pemilik kost."
+                : "Pemesanan Anda untuk " . $bk['room_name'] . " di " . $bk['kost_name'] . " telah DITOLAK/DIBATALKAN oleh pemilik kost.";
+            
+            $notif_stmt = $pdo->prepare("INSERT INTO notifikasi (user_id, message, is_read) VALUES (?, ?, 0)");
+            $notif_stmt->execute([$bk['user_id'], $msg]);
         }
         
         $pdo->commit();
