@@ -7,6 +7,11 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+if ($_SESSION['role'] !== 'user') {
+    header("Location: ../../index.php");
+    exit();
+}
+
 $user_id     = $_SESSION['user_id'];
 $receiver_id = (int)($_GET['receiver_id'] ?? 0);
 

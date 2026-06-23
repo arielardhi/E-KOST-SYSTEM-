@@ -226,7 +226,6 @@ include '../../layouts/header.php';
     <div class="d-flex align-items-start justify-content-between mb-4 flex-wrap gap-3">
         <div>
             <h2 class="fw-bold mb-1" style="color:var(--dark)"><i class="bi bi-file-earmark-arrow-down-fill me-2" style="color:var(--primary)"></i>Export Laporan</h2>
-            <p class="text-muted mb-0">Generate dan unduh laporan data platform E-KOST System</p>
         </div>
     </div>
 
@@ -262,7 +261,7 @@ include '../../layouts/header.php';
                         <div class="text-muted small">Format laporan siap cetak</div>
                     </div>
                 </div>
-                <p class="text-muted small mb-3">Ekspor laporan dalam format PDF yang siap dicetak atau dibagikan. Cocok untuk laporan formal.</p>
+
                 <button class="btn btn-danger w-100 fw-600"><i class="bi bi-file-earmark-pdf me-2"></i>Download PDF / Cetak</button>
             </div>
         </div>
@@ -275,7 +274,7 @@ include '../../layouts/header.php';
                         <div class="text-muted small">Spreadsheet untuk analisis</div>
                     </div>
                 </div>
-                <p class="text-muted small mb-3">Ekspor data dalam format Excel (.xls) untuk analisis lebih lanjut atau pengolahan data lanjutan.</p>
+
                 <button class="btn btn-success w-100 fw-600"><i class="bi bi-file-earmark-excel me-2"></i>Download Excel</button>
             </div>
         </div>
@@ -288,7 +287,7 @@ include '../../layouts/header.php';
                         <div class="text-muted small">Raw data universal</div>
                     </div>
                 </div>
-                <p class="text-muted small mb-3">Ekspor data dalam format CSV yang kompatibel dengan berbagai aplikasi dan sistem manajemen data.</p>
+
                 <button class="btn btn-warning w-100 fw-600 text-white"><i class="bi bi-file-earmark-text me-2"></i>Download CSV</button>
             </div>
         </div>

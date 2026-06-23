@@ -14,13 +14,18 @@ if (isset($_SESSION['user_id']) && !isset($pdo)) {
     }
 }
 
-// Hitung unread messages if logged in
+// Hitung unread messages & notifications if logged in
 $unread_count = 0;
+$unread_notifications_count = 0;
 if (isset($_SESSION['user_id']) && isset($pdo)) {
     try {
         $stmt_unread = $pdo->prepare("SELECT COUNT(*) FROM chat WHERE receiver_id = ? AND is_read = 0");
         $stmt_unread->execute([$_SESSION['user_id']]);
         $unread_count = (int)$stmt_unread->fetchColumn();
+
+        $stmt_unread_notif = $pdo->prepare("SELECT COUNT(*) FROM notifikasi WHERE user_id = ? AND is_read = 0");
+        $stmt_unread_notif->execute([$_SESSION['user_id']]);
+        $unread_notifications_count = (int)$stmt_unread_notif->fetchColumn();
     } catch (Exception $e) {
         // Silently fail if query fails
     }
@@ -35,6 +40,30 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/style.css?v=1.0.1">
+    <style>
+        @media print {
+            .sidebar-wrapper,
+            .mobile-topbar,
+            .offcanvas-sidebar,
+            header,
+            footer,
+            .btn,
+            .no-print {
+                display: none !important;
+            }
+            .content-wrapper, 
+            .main-content {
+                padding: 0 !important;
+                margin: 0 !important;
+                border: none !important;
+            }
+            body {
+                background-color: #fff !important;
+                color: #000 !important;
+                padding: 0 !important;
+            }
+        }
+    </style>
 </head>
 <body class="<?php echo $current_page != 'index.php' ? 'sidebar-layout' : ''; ?>">
 
@@ -66,16 +95,16 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
                             $chat_module = $_SESSION['role'] === 'owner' ? 'owner' : 'user';
                             $dashboard_url = $base_url . 'modules/' . $_SESSION['role'] . '/dashboard.php';
                             ?>
+                            <?php if ($_SESSION['role'] !== 'admin'): ?>
                             <li class="nav-item me-2">
                                 <a class="nav-link position-relative" href="<?php echo $base_url; ?>modules/<?php echo $chat_module; ?>/chat.php" title="Pesan">
                                     <i class="bi bi-chat-dots-fill fs-5"></i>
-                                    <?php if ($unread_count > 0): ?>
-                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;">
-                                            <?php echo $unread_count > 9 ? '9+' : $unread_count; ?>
-                                        </span>
+                                    <?php if ($unread_count > 0 || $unread_notifications_count > 0): ?>
+                                        <span class="position-absolute bg-danger border border-white rounded-circle" style="top: 8px; right: 4px; width: 8px; height: 8px;"></span>
                                     <?php endif; ?>
                                 </a>
                             </li>
+                            <?php endif; ?>
                             <li class="nav-item dropdown">
                                 <a class="btn btn-primary btn-sm dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-person-circle"></i> <?php echo htmlspecialchars($_SESSION['username']); ?>
@@ -119,7 +148,7 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
         } elseif ($user_role === 'owner') {
             $menu_items = [
                 ['label' => 'Dashboard', 'url' => $base_url . 'modules/owner/dashboard.php', 'icon' => 'bi-speedometer2'],
-                ['label' => 'Notifikasi', 'url' => $base_url . 'modules/owner/notifications.php', 'icon' => 'bi-bell'],
+                ['label' => 'Notifikasi', 'url' => $base_url . 'modules/owner/notifications.php', 'icon' => 'bi-bell', 'badge' => $unread_notifications_count],
                 ['label' => 'Kelola Kost', 'url' => $base_url . 'modules/owner/kost_manage.php', 'icon' => 'bi-house-gear'],
                 ['label' => 'Status Kamar', 'url' => $base_url . 'modules/owner/room_status.php', 'icon' => 'bi-door-open'],
                 ['label' => 'Booking Masuk', 'url' => $base_url . 'modules/owner/bookings.php', 'icon' => 'bi-calendar-check'],
@@ -129,7 +158,7 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
         } else { // user / tenant
             $menu_items = [
                 ['label' => 'Dashboard', 'url' => $base_url . 'modules/user/dashboard.php', 'icon' => 'bi-speedometer2'],
-                ['label' => 'Notifikasi', 'url' => $base_url . 'modules/user/notifications.php', 'icon' => 'bi-bell'],
+                ['label' => 'Notifikasi', 'url' => $base_url . 'modules/user/notifications.php', 'icon' => 'bi-bell', 'badge' => $unread_notifications_count],
                 ['label' => 'Pesanan Saya', 'url' => $base_url . 'modules/user/bookings.php', 'icon' => 'bi-calendar-check'],
                 ['label' => 'Review & Rating', 'url' => $base_url . 'modules/user/reviews.php', 'icon' => 'bi-star'],
                 ['label' => 'Favorit', 'url' => $base_url . 'modules/user/favorites.php', 'icon' => 'bi-heart'],
