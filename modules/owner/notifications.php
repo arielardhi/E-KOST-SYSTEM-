@@ -46,24 +46,14 @@ function owner_notif_icon($message) {
     return ['bi-bell-fill','#5C4D78'];
 }
 
-// Demo if empty
-if (empty($notifications)) {
-    $notifications = [
-        ['id'=>'d1','message'=>'Booking baru dari Andi untuk Kamar AC di Kost Anda telah masuk. Segera konfirmasi.','is_read'=>0,'created_at'=>date('Y-m-d H:i:s',strtotime('-30 minutes'))],
-        ['id'=>'d2','message'=>'Pembayaran dari Siti sebesar Rp 1.200.000 menunggu verifikasi Anda.','is_read'=>0,'created_at'=>date('Y-m-d H:i:s',strtotime('-2 hours'))],
-        ['id'=>'d3','message'=>'Anda mendapatkan review bintang 5 dari Dedi untuk Kost Anda. Luar biasa!','is_read'=>1,'created_at'=>date('Y-m-d H:i:s',strtotime('-1 day'))],
-        ['id'=>'d4','message'=>'Pesan baru dari Rini: "Pak, apakah masih ada kamar kosong untuk bulan depan?"','is_read'=>1,'created_at'=>date('Y-m-d H:i:s',strtotime('-2 days'))],
-        ['id'=>'d5','message'=>'Booking dari Budi telah dibatalkan (cancel). Kamar kembali tersedia.','is_read'=>1,'created_at'=>date('Y-m-d H:i:s',strtotime('-3 days'))],
-    ];
-    $unread_total = 2; $total_notif = 5;
-}
+
 
 include '../../layouts/header.php';
 ?>
 
 <style>
 .notif-item { border-left:4px solid var(--border-color); transition:all .2s; }
-.notif-item.unread { border-left-color:var(--primary); background:linear-gradient(to right,rgba(0,180,186,.04),transparent) !important; }
+.notif-item.unread { border-left-color:var(--primary); }
 .notif-item:hover { transform:translateX(3px); }
 .notif-icon-wrap { width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0; }
 .notif-filter-btn { padding:6px 18px;border-radius:99px;font-weight:600;font-size:.875rem;border:1.5px solid var(--border-color);background:#fff;color:var(--text-muted);cursor:pointer;transition:all .15s;text-decoration:none; }
@@ -84,9 +74,8 @@ include '../../layouts/header.php';
     </div>
 
     <div class="row g-3 mb-4">
-        <div class="col-4"><div class="card text-center p-3"><div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--dark)"><?=$total_notif?></div><div class="text-muted small fw-600">Total</div></div></div>
-        <div class="col-4"><div class="card text-center p-3"><div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--primary)"><?=$unread_total?></div><div class="text-muted small fw-600">Belum Dibaca</div></div></div>
-        <div class="col-4"><div class="card text-center p-3"><div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--success)"><?=$total_notif-$unread_total?></div><div class="text-muted small fw-600">Sudah Dibaca</div></div></div>
+        <div class="col-6"><div class="card text-center p-3"><div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--dark)"><?=$total_notif?></div><div class="text-muted small fw-600">Total</div></div></div>
+        <div class="col-6"><div class="card text-center p-3"><div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--primary)"><?=$unread_total?></div><div class="text-muted small fw-600">Belum Dibaca</div></div></div>
     </div>
 
     <div class="d-flex gap-2 mb-4 flex-wrap">
@@ -105,7 +94,6 @@ include '../../layouts/header.php';
     <div class="d-flex flex-column gap-2">
         <?php foreach($notifications as $notif):
             [$icon,$color] = owner_notif_icon($notif['message']);
-            $is_demo = str_starts_with((string)$notif['id'],'d');
         ?>
         <div class="card notif-item <?=!$notif['is_read']?'unread':''?>">
             <div class="card-body py-3">
@@ -118,14 +106,12 @@ include '../../layouts/header.php';
                         </div>
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-2">
                             <div class="text-muted small"><i class="bi bi-clock me-1"></i><?=date('d M Y, H:i',strtotime($notif['created_at']))?></div>
-                            <?php if(!$is_demo): ?>
                             <div class="d-flex gap-2">
                                 <?php if(!$notif['is_read']): ?>
-                                <form method="POST" class="d-inline"><input type="hidden" name="mark_read" value="<?=$notif['id']?>"><button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:.75rem"><i class="bi bi-check2 me-1"></i>Dibaca</button></form>
+                                <form method="POST" class="d-inline"><input type="hidden" name="mark_read" value="<?=$notif['id']?>"><button type="submit" class="btn btn-sm btn-outline-primary py-1 px-3" style="font-size:.8rem"><i class="bi bi-check2 me-1"></i>Tandai sudah dibaca</button></form>
                                 <?php endif; ?>
-                                <form method="POST" class="d-inline"><input type="hidden" name="delete_notif" value="<?=$notif['id']?>"><button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem" onclick="return confirm('Hapus?')"><i class="bi bi-trash"></i></button></form>
+                                <form method="POST" class="d-inline"><input type="hidden" name="delete_notif" value="<?=$notif['id']?>"><button type="submit" class="btn btn-sm btn-outline-danger py-1 px-3" style="font-size:.8rem" onclick="return confirm('Hapus?')"><i class="bi bi-trash"></i></button></form>
                             </div>
-                            <?php else: ?><span class="badge" style="background:rgba(0,180,186,.12);color:var(--primary);font-size:.7rem">Demo</span><?php endif; ?>
                         </div>
                     </div>
                 </div>

@@ -203,6 +203,7 @@ $avg_rating = round($rating_stats['avg_rating'] ?? 0, 1);
                     <?php else: ?>
                         <div class="review-list">
                             <?php foreach ($reviews as $rev): ?>
+                                <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
                                     <?php
                                     $avatar_url = 'https://via.placeholder.com/50?text=U';
                                     if ($rev['avatar']) {

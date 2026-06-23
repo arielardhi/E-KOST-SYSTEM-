@@ -59,19 +59,7 @@ function notif_icon($message) {
     return ['bi-bell-fill', '#5C4D78'];
 }
 
-// Demo notifications if empty
-$demo_notifs = [];
-if (empty($notifications)) {
-    $demo_notifs = [
-        ['id'=>'d1','message'=>'Booking Anda di Kost Mentari Indah telah dikonfirmasi oleh pemilik.','is_read'=>0,'created_at'=>date('Y-m-d H:i:s', strtotime('-1 hour'))],
-        ['id'=>'d2','message'=>'Pembayaran Anda sebesar Rp 800.000 telah berhasil diverifikasi.','is_read'=>0,'created_at'=>date('Y-m-d H:i:s', strtotime('-3 hours'))],
-        ['id'=>'d3','message'=>'Anda mendapatkan pesan baru dari Budi Santoso (Pemilik Kost Mawar).','is_read'=>1,'created_at'=>date('Y-m-d H:i:s', strtotime('-1 day'))],
-        ['id'=>'d4','message'=>'Pembayaran Anda telah ditolak. Harap upload ulang bukti pembayaran.','is_read'=>1,'created_at'=>date('Y-m-d H:i:s', strtotime('-2 days'))],
-        ['id'=>'d5','message'=>'Pesanan baru Anda di Kost Harmoni Jaya sedang dalam proses review.','is_read'=>1,'created_at'=>date('Y-m-d H:i:s', strtotime('-3 days'))],
-    ];
-    $notifications = $demo_notifs;
-    $unread_total  = 2;
-}
+
 
 include '../../layouts/header.php';
 ?>
@@ -84,7 +72,6 @@ include '../../layouts/header.php';
 }
 .notif-item.unread {
     border-left-color: var(--primary);
-    background: linear-gradient(to right, rgba(0,180,186,0.04), transparent) !important;
 }
 .notif-item:hover { transform: translateX(3px); }
 .notif-icon-wrap {
@@ -121,22 +108,16 @@ include '../../layouts/header.php';
 
     <!-- Stats -->
     <div class="row g-3 mb-4">
-        <div class="col-4">
+        <div class="col-6">
             <div class="card text-center p-3">
                 <div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--dark)"><?= $total_notif ?></div>
                 <div class="text-muted small fw-600">Total</div>
             </div>
         </div>
-        <div class="col-4">
+        <div class="col-6">
             <div class="card text-center p-3">
                 <div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--primary)"><?= $unread_total ?></div>
                 <div class="text-muted small fw-600">Belum Dibaca</div>
-            </div>
-        </div>
-        <div class="col-4">
-            <div class="card text-center p-3">
-                <div class="fw-800 mb-1" style="font-size:1.8rem;color:var(--success)"><?= $total_notif - $unread_total ?></div>
-                <div class="text-muted small fw-600">Sudah Dibaca</div>
             </div>
         </div>
     </div>
@@ -159,7 +140,6 @@ include '../../layouts/header.php';
     <div class="d-flex flex-column gap-2">
         <?php foreach ($notifications as $notif):
             [$icon, $color] = notif_icon($notif['message']);
-            $is_demo = isset($notif['id']) && str_starts_with((string)$notif['id'], 'd');
         ?>
         <div class="card notif-item <?= !$notif['is_read'] ? 'unread' : '' ?>">
             <div class="card-body py-3">
@@ -182,26 +162,22 @@ include '../../layouts/header.php';
                             <div class="text-muted small">
                                 <i class="bi bi-clock me-1"></i><?= date('d M Y, H:i', strtotime($notif['created_at'])) ?>
                             </div>
-                            <?php if (!$is_demo): ?>
                             <div class="d-flex gap-2">
                                 <?php if (!$notif['is_read']): ?>
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="mark_read" value="<?= $notif['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size:.75rem">
-                                        <i class="bi bi-check2 me-1"></i>Dibaca
+                                    <button type="submit" class="btn btn-sm btn-outline-primary py-1 px-3" style="font-size:.8rem">
+                                        <i class="bi bi-check2 me-1"></i>Tandai sudah dibaca
                                     </button>
                                 </form>
                                 <?php endif; ?>
                                 <form method="POST" class="d-inline">
                                     <input type="hidden" name="delete_notif" value="<?= $notif['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem" onclick="return confirm('Hapus notifikasi?')">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-3" style="font-size:.8rem" onclick="return confirm('Hapus notifikasi?')">
                                         <i class="bi bi-trash"></i>
                                     </button>
                                 </form>
                             </div>
-                            <?php else: ?>
-                            <span class="badge" style="background:rgba(0,180,186,.12);color:var(--primary);font-size:.7rem">Demo</span>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

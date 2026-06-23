@@ -28,16 +28,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$owner_id, $name, $type, $description, $address, $city, $rules, $facilities, $price_start]);
         $kost_id = $pdo->lastInsertId();
 
-        // Handle Image Upload
-        if (!empty($_FILES['main_image']['name'])) {
+        // Handle Multiple Image Upload
+        if (!empty($_FILES['kost_images']['name'][0])) {
             $target_dir = "../../uploads/kost/";
-            $file_extension = pathinfo($_FILES["main_image"]["name"], PATHINFO_EXTENSION);
-            $file_name = "kost_" . $kost_id . "_" . time() . "." . $file_extension;
-            $target_file = $target_dir . $file_name;
+            if (!file_exists($target_dir)) {
+                mkdir($target_dir, 0777, true);
+            }
 
-            if (move_uploaded_file($_FILES["main_image"]["tmp_name"], $target_file)) {
-                $stmt = $pdo->prepare("INSERT INTO kost_foto (kost_id, image_path, is_main) VALUES (?, ?, 1)");
-                $stmt->execute([$kost_id, "uploads/kost/" . $file_name]);
+            foreach ($_FILES['kost_images']['name'] as $key => $name) {
+                if ($_FILES['kost_images']['error'][$key] === UPLOAD_ERR_OK) {
+                    $tmp_name = $_FILES['kost_images']['tmp_name'][$key];
+                    $file_extension = pathinfo($name, PATHINFO_EXTENSION);
+                    $file_name = "kost_" . $kost_id . "_" . time() . "_" . $key . "." . $file_extension;
+                    $target_file = $target_dir . $file_name;
+
+                    if (move_uploaded_file($tmp_name, $target_file)) {
+                        $is_main = ($key === 0) ? 1 : 0;
+                        $stmt = $pdo->prepare("INSERT INTO kost_foto (kost_id, image_path, is_main) VALUES (?, ?, ?)");
+                        $stmt->execute([$kost_id, "uploads/kost/" . $file_name, $is_main]);
+                    }
+                }
             }
         }
 
@@ -125,8 +135,9 @@ include '../../layouts/header.php';
                         </div>
 
                         <div class="mb-4">
-                            <label class="form-label">Foto Utama Kost</label>
-                            <input type="file" name="main_image" class="form-control" accept="image/*" required>
+                            <label class="form-label fw-bold">Foto Kost (Bisa pilih 1 atau lebih)</label>
+                            <input type="file" name="kost_images[]" id="kost_images" class="form-control" accept="image/*" multiple required>
+                            <div id="image_preview_container" class="row g-2 mt-2"></div>
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
@@ -139,5 +150,42 @@ include '../../layouts/header.php';
         </div>
     </div>
 </div>
+
+<script>
+document.getElementById('kost_images').addEventListener('change', function(event) {
+    const container = document.getElementById('image_preview_container');
+    container.innerHTML = '';
+    const files = event.target.files;
+    
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type.match('image.*')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-3 position-relative';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.className = 'img-thumbnail w-100';
+                img.style.height = '120px';
+                img.style.objectFit = 'cover';
+                img.style.border = '2px solid #000';
+                img.style.boxShadow = '3px 3px 0 #000';
+                
+                const badge = document.createElement('span');
+                badge.className = 'position-absolute top-0 start-0 m-2 badge ' + (i === 0 ? 'bg-primary' : 'bg-secondary');
+                badge.innerText = i === 0 ? 'Utama' : 'Foto ' + (i + 1);
+                badge.style.border = '1px solid #000';
+                
+                col.appendChild(img);
+                col.appendChild(badge);
+                container.appendChild(col);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+});
+</script>
 
 <?php include '../../layouts/footer.php'; ?>
