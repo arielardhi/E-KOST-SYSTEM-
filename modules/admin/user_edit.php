@@ -32,6 +32,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute([$username, $email, $role, $full_name, $status, $id]);
         $success = "Data user berhasil diperbarui! <a href='users.php'>Kembali ke daftar</a>";
         
+        try {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            $log_stmt = $pdo->prepare("INSERT INTO system_logs (user_id, username, role, activity, ip_address) VALUES (?, ?, ?, ?, ?)");
+            $log_stmt->execute([
+                $_SESSION['user_id'],
+                $_SESSION['username'] ?? 'admin',
+                $_SESSION['role'] ?? 'admin',
+                "Mengubah data pengguna: $username",
+                $ip
+            ]);
+        } catch (Exception $log_ex) {
+            // Fail silently
+        }
+
         // Refresh data
         $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$id]);

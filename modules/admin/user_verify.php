@@ -17,9 +17,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = ($action === 'approve') ? 'verified' : 'rejected';
         
         try {
+            // Get username before status update
+            $username_verify = '';
+            try {
+                $stmt_u = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+                $stmt_u->execute([$user_id]);
+                $username_verify = $stmt_u->fetchColumn();
+            } catch (Exception $ex_u) {
+                // Fail silently
+            }
+
             $stmt = $pdo->prepare("UPDATE users SET status = ? WHERE id = ?");
             $success = $stmt->execute([$status, $user_id]);
             
+            if ($success && $username_verify) {
+                try {
+                    $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                    $log_stmt = $pdo->prepare("INSERT INTO system_logs (user_id, username, role, activity, ip_address) VALUES (?, ?, ?, ?, ?)");
+                    $act_msg = ($action === 'approve') ? "Menyetujui akun pengguna: $username_verify" : "Menolak akun pengguna: $username_verify";
+                    $log_stmt->execute([
+                        $_SESSION['user_id'],
+                        $_SESSION['username'] ?? 'admin',
+                        $_SESSION['role'] ?? 'admin',
+                        $act_msg,
+                        $ip
+                    ]);
+                } catch (Exception $log_ex) {
+                    // Fail silently
+                }
+            }
+
             header('Content-Type: application/json');
             echo json_encode(['success' => $success]);
             exit();

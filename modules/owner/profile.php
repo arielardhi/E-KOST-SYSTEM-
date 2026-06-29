@@ -50,6 +50,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
     }
 }
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_password'])) {
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+    
+    if (empty($new_password)) {
+        $error = "Password baru tidak boleh kosong.";
+    } elseif ($new_password !== $confirm_password) {
+        $error = "Konfirmasi password baru tidak cocok.";
+    } elseif (strlen($new_password) < 6) {
+        $error = "Password baru minimal 6 karakter.";
+    } else {
+        try {
+            $hashed = password_hash($new_password, PASSWORD_DEFAULT);
+            $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+            $stmt->execute([$hashed, $user_id]);
+            $success = "Password Anda berhasil diperbarui!";
+        } catch (Exception $e) {
+            $error = "Gagal memperbarui password: " . $e->getMessage();
+        }
+    }
+}
+
 include '../../layouts/header.php';
 ?>
 
@@ -131,7 +153,7 @@ include '../../layouts/header.php';
 
                 <div class="mt-5 p-4 border border-3 border-dark bg-light">
                     <h4 class="fw-black text-uppercase mb-4">Ganti Password Keamanan</h4>
-                    <form action="change_password.php" method="POST">
+                    <form action="" method="POST">
                         <div class="row g-3">
                             <div class="col-md-5">
                                 <input type="password" name="new_password" class="form-control" placeholder="Password Baru" required>
@@ -140,7 +162,7 @@ include '../../layouts/header.php';
                                 <input type="password" name="confirm_password" class="form-control" placeholder="Konfirmasi Password Baru" required>
                             </div>
                             <div class="col-md-2">
-                                <button type="submit" class="btn btn-danger w-100 py-3">Update</button>
+                                <button type="submit" name="update_password" class="btn btn-danger w-100 py-3">Update</button>
                             </div>
                         </div>
                     </form>

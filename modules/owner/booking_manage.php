@@ -207,8 +207,11 @@ include '../../layouts/header.php';
                         
                         <div class="col-sm-4 text-muted mb-2">No. Telepon / WA</div>
                         <div class="col-sm-8 mb-2">
-                            <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $booking['tenant_phone']); ?>" target="_blank" class="fw-semibold">
+                            <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $booking['tenant_phone']); ?>" target="_blank" class="fw-semibold me-2">
                                 <?php echo htmlspecialchars($booking['tenant_phone']); ?> <i class="bi bi-whatsapp ms-1 text-success"></i>
+                            </a>
+                            <a href="chat.php?receiver_id=<?php echo $booking['user_id']; ?>" class="btn btn-sm btn-primary">
+                                <i class="bi bi-chat-dots-fill me-1"></i> Chat Hubungi
                             </a>
                         </div>
                         

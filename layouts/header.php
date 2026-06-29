@@ -5,14 +5,41 @@ if (session_status() === PHP_SESSION_NONE) {
 $base_url = "/" . basename(dirname(__DIR__)) . "/";
 $current_page = basename($_SERVER['PHP_SELF']);
 
-// Load Database Config if needed for chat counts
-if (isset($_SESSION['user_id']) && !isset($pdo)) {
-    // Attempt to load db config safely
+// Load Database Config
+if (!isset($pdo)) {
     $config_db_path = dirname(__DIR__) . '/config/database.php';
     if (file_exists($config_db_path)) {
         include_once $config_db_path;
     }
 }
+
+// Load System Settings
+$sys_settings = [];
+if (isset($pdo)) {
+    try {
+        $settings_stmt = $pdo->query("SELECT * FROM system_settings");
+        while ($row = $settings_stmt->fetch(PDO::FETCH_ASSOC)) {
+            $sys_settings[$row['setting_key']] = $row['setting_value'];
+        }
+    } catch (Exception $e) {
+        // Fail silently
+    }
+}
+$app_name = $sys_settings['app_name'] ?? 'E-KOST SYSTEM';
+$support_email = $sys_settings['support_email'] ?? 'support@ekost.com';
+$contact_phone = $sys_settings['contact_phone'] ?? '+62 812 3456 7890';
+
+// Global Maintenance Mode Interceptor
+$maintenance_mode = intval($sys_settings['maintenance_mode'] ?? 0);
+if ($maintenance_mode === 1) {
+    $is_admin = isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+    $is_maintenance_page = basename($_SERVER['PHP_SELF']) === 'maintenance.php';
+    if (!$is_admin && !$is_maintenance_page) {
+        header("Location: " . $base_url . "maintenance.php");
+        exit();
+    }
+}
+
 
 // Hitung unread messages & notifications if logged in
 $unread_count = 0;
@@ -36,10 +63,13 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E-KOST SYSTEM</title>
+    <title><?php echo htmlspecialchars($app_name); ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="<?php echo $base_url; ?>assets/css/style.css?v=1.0.1">
+    <script>
+        window.BASE_URL = '<?php echo $base_url; ?>';
+    </script>
     <style>
         @media print {
             .sidebar-wrapper,
@@ -74,7 +104,13 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center" href="<?php echo $base_url; ?>index.php">
                     <img src="<?php echo $base_url; ?>assets/images/logo.png" alt="Logo" class="me-2 rounded" style="height: 32px; width: 32px; object-fit: contain;">
-                    E-KOST <span>SYSTEM</span>
+                    <?php
+                    $app_name_parts = explode(' ', $app_name, 2);
+                    echo htmlspecialchars($app_name_parts[0]);
+                    if (isset($app_name_parts[1])) {
+                        echo ' <span>' . htmlspecialchars($app_name_parts[1]) . '</span>';
+                    }
+                    ?>
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
@@ -200,12 +236,19 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
 
     // Left Sidebar content rendering function
     function renderSidebarContent($menu_items, $base_url, $is_logged_in, $user_role, $unread_count) {
+        global $app_name;
         ?>
         <!-- Brand -->
         <div class="sidebar-brand text-center text-lg-start">
             <a href="<?php echo $base_url; ?>index.php" class="sidebar-brand-link d-flex align-items-center justify-content-center justify-content-lg-start">
                 <img src="<?php echo $base_url; ?>assets/images/logo.png" alt="Logo" class="me-2 rounded" style="height: 32px; width: 32px; background-color: white; padding: 2px; object-fit: contain;">
-                E-KOST <span>SYSTEM</span>
+                <?php
+                $app_name_parts = explode(' ', $app_name, 2);
+                echo htmlspecialchars($app_name_parts[0]);
+                if (isset($app_name_parts[1])) {
+                    echo ' <span>' . htmlspecialchars($app_name_parts[1]) . '</span>';
+                }
+                ?>
             </a>
         </div>
 
@@ -283,7 +326,13 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
         <div class="mobile-topbar d-flex d-lg-none w-100 justify-content-between align-items-center">
             <a href="<?php echo $base_url; ?>index.php" class="navbar-brand d-flex align-items-center">
                 <img src="<?php echo $base_url; ?>assets/images/logo.png" alt="Logo" class="me-2 rounded" style="height: 28px; width: 28px; object-fit: contain;">
-                E-KOST <span>SYSTEM</span>
+                <?php
+                $app_name_parts = explode(' ', $app_name, 2);
+                echo htmlspecialchars($app_name_parts[0]);
+                if (isset($app_name_parts[1])) {
+                    echo ' <span>' . htmlspecialchars($app_name_parts[1]) . '</span>';
+                }
+                ?>
             </a>
             <button class="btn btn-outline-dark border-0 p-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
                 <i class="bi bi-list fs-3"></i>

@@ -153,7 +153,8 @@ include '../../layouts/header.php';
                                             </td>
                                             <td>
                                                 <div class="btn-group">
-                                                    <a href="booking_manage.php?id=<?php echo $b['id']; ?>" class="btn btn-sm btn-outline-primary">Kelola</a>
+                                                    <a href="booking_manage.php?id=<?php echo $b['id']; ?>" class="btn btn-sm btn-outline-primary" title="Kelola">Kelola</a>
+                                                    <a href="chat.php?receiver_id=<?php echo $b['user_id']; ?>" class="btn btn-sm btn-outline-info" title="Chat dengan Penyewa"><i class="bi bi-chat-dots-fill"></i></a>
                                                     <?php if ($b['status'] == 'pending'): ?>
                                                         <a href="?action=confirm&id=<?php echo $b['id']; ?>" class="btn btn-sm btn-success" onclick="return confirm('Konfirmasi pesanan ini?')">Terima</a>
                                                         <a href="?action=cancel&id=<?php echo $b['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Batalkan pesanan ini?')">Tolak</a>

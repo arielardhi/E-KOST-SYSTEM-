@@ -7,7 +7,7 @@ if ($current_page == 'index.php'):
         <div class="container">
             <div class="row g-4 justify-content-between">
                 <div class="col-md-5">
-                    <h5 class="fw-bold text-white mb-3" style="letter-spacing: 0.5px;">E-KOST SYSTEM</h5>
+                    <h5 class="fw-bold text-white mb-3" style="letter-spacing: 0.5px;"><?php echo htmlspecialchars($app_name); ?></h5>
                     <p class="text-muted small lh-lg" style="max-width: 400px; text-align: justify;">Platform pencarian dan pengelolaan kost terbaik untuk mahasiswa dan pekerja. Cari kost impianmu dengan mudah dan cepat.</p>
                 </div>
                 <div class="col-md-3 col-6">
@@ -20,13 +20,13 @@ if ($current_page == 'index.php'):
                 </div>
                 <div class="col-md-3 col-6">
                     <h5 class="fw-bold text-white mb-3" style="letter-spacing: 0.5px;">Kontak</h5>
-                    <p class="text-muted small mb-2"><i class="bi bi-envelope-fill me-2 text-secondary"></i>support@ekost.com</p>
-                    <p class="text-muted small mb-0"><i class="bi bi-telephone-fill me-2 text-secondary"></i>+62 812 3456 7890</p>
+                    <p class="text-muted small mb-2"><i class="bi bi-envelope-fill me-2 text-secondary"></i><?php echo htmlspecialchars($support_email); ?></p>
+                    <p class="text-muted small mb-0"><i class="bi bi-telephone-fill me-2 text-secondary"></i><?php echo htmlspecialchars($contact_phone); ?></p>
                 </div>
             </div>
             <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
             <div class="text-center text-muted small">
-                &copy; <?php echo date('Y'); ?> <span class="text-white fw-semibold">E-KOST SYSTEM</span>. All rights reserved.
+                &copy; <?php echo date('Y'); ?> <span class="text-white fw-semibold"><?php echo htmlspecialchars($app_name); ?></span>. All rights reserved.
             </div>
         </div>
     </footer>
@@ -42,7 +42,7 @@ if ($current_page == 'index.php'):
             </main> <!-- End of main-content -->
             <footer class="py-3 px-4 border-top bg-white mt-auto">
                 <div class="d-flex flex-column flex-md-row align-items-center justify-content-between text-muted small gap-2">
-                    <div style="font-weight: 500;">&copy; <?php echo date('Y'); ?> <span class="text-dark fw-semibold">E-KOST SYSTEM</span>. All rights reserved.</div>
+                    <div style="font-weight: 500;">&copy; <?php echo date('Y'); ?> <span class="text-dark fw-semibold"><?php echo htmlspecialchars($app_name); ?></span>. All rights reserved.</div>
                     <div class="d-flex gap-4">
                         <a href="#" class="text-decoration-none text-muted hover-dark-transition">Tentang Kami</a>
                         <a href="#" class="text-decoration-none text-muted hover-dark-transition">Bantuan</a>

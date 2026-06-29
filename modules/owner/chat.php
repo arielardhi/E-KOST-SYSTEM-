@@ -97,12 +97,30 @@ include '../../layouts/header.php';
                     <h6 class="mb-0 text-white fw-bold"><i class="bi bi-chat-dots-fill me-2"></i>Pesan Masuk</h6>
                 </div>
                 <div class="contact-list">
-                    <?php if (empty($contacts)): ?>
+                    <?php if (empty($contacts) && !$receiver_id): ?>
                         <div class="p-4 text-center text-muted mt-4">
                             <i class="bi bi-chat-square-text fs-2 mb-2 d-block"></i>
                             <small>Belum ada pesan masuk</small>
                         </div>
                     <?php endif; ?>
+
+                    <?php
+                    // Jika receiver baru, tampilkan di atas
+                    $contact_ids = array_column($contacts, 'id');
+                    if ($receiver_id && $receiver_info && !in_array($receiver_id, $contact_ids)):
+                    ?>
+                        <div class="contact-item active p-3 d-flex align-items-center gap-3">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                                 style="width:42px;height:42px;background:#eef1ff;">
+                                <i class="bi bi-person-fill" style="color:#001ee1;"></i>
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-semibold text-truncate" style="font-size:.9rem;"><?= htmlspecialchars($receiver_info['full_name']) ?></div>
+                                <small class="text-muted"><?= ucfirst($receiver_info['role']) ?></small>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
                     <?php foreach ($contacts as $c): ?>
                         <a href="chat.php?receiver_id=<?= $c['id'] ?>"
                            class="contact-item <?= $receiver_id == $c['id'] ? 'active' : '' ?> p-3 d-flex align-items-center gap-3 text-decoration-none text-dark">

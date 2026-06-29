@@ -32,6 +32,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_SESSION['username'] = $user['username'];
             $_SESSION['role']     = $user['role'];
 
+            try {
+                $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+                $log_stmt = $pdo->prepare("INSERT INTO system_logs (user_id, username, role, activity, ip_address) VALUES (?, ?, ?, ?, ?)");
+                $log_stmt->execute([$user['id'], $user['username'], $user['role'], 'Login ke sistem', $ip]);
+            } catch (Exception $e) {
+                // Fail silently
+            }
+
             if ($user['role'] == 'admin')       header("Location: ../admin/dashboard.php");
             elseif ($user['role'] == 'owner')   header("Location: ../owner/dashboard.php");
             else                                header("Location: ../user/dashboard.php");
@@ -39,6 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     } else {
         $error = "Username atau password salah!";
+    }
+
+    if (!empty($error)) {
+        try {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            $log_stmt = $pdo->prepare("INSERT INTO system_logs (user_id, username, role, activity, ip_address) VALUES (?, ?, ?, ?, ?)");
+            $log_stmt->execute([0, $username, 'guest', "Gagal login - username: $username", $ip]);
+        } catch (Exception $e) {
+            // Fail silently
+        }
     }
 }
 ?>

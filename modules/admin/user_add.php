@@ -22,6 +22,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, status) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->execute([$username, $email, $password, $role, $full_name, $status]);
         $success = "User berhasil ditambahkan! <a href='users.php'>Lihat daftar</a>";
+
+        try {
+            $ip = $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+            $log_stmt = $pdo->prepare("INSERT INTO system_logs (user_id, username, role, activity, ip_address) VALUES (?, ?, ?, ?, ?)");
+            $log_stmt->execute([
+                $_SESSION['user_id'],
+                $_SESSION['username'] ?? 'admin',
+                $_SESSION['role'] ?? 'admin',
+                "Menambah pengguna baru: $username sebagai $role",
+                $ip
+            ]);
+        } catch (Exception $log_ex) {
+            // Fail silently
+        }
     } catch (Exception $e) {
         $error = "Gagal menambah user: " . $e->getMessage();
     }
