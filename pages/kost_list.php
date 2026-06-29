@@ -35,8 +35,7 @@ $query  = "SELECT k.*, u.full_name as owner_name,
            (SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id = k.id) as total_available_rooms
            FROM kost k
            JOIN users u ON k.owner_id = u.id
-           WHERE 1=1
-             AND (SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id = k.id) > 0";
+           WHERE 1=1";
 $params = [];
 if ($city)  { $query .= " AND k.city LIKE ?";       $params[] = "%$city%"; }
 if ($type)  { $query .= " AND k.type = ?";           $params[] = $type; }

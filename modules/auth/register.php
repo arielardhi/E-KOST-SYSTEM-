@@ -30,10 +30,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if ($stmt->fetch()) {
         $error = "Username atau Email sudah terdaftar!";
     } else {
-        $status = ($role === 'admin') ? 'verified' : 'pending';
+        $status = 'verified';
         $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
         if ($stmt->execute([$username, $email, $password, $role, $full_name, $phone, $status])) {
-            $success = "Registrasi berhasil! Akun Anda sedang dalam proses verifikasi oleh Admin.";
+            $success = "Registrasi berhasil! Silakan masuk ke akun Anda.";
         } else {
             $error = "Terjadi kesalahan saat registrasi.";
         }

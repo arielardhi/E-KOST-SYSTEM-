@@ -19,7 +19,7 @@ if ($action === 'list') {
     $page      = max(1, (int)($_GET['page'] ?? 1));
     $offset    = ($page - 1) * $limit;
 
-    $where = ["1=1", "(SELECT COALESCE(SUM(available_rooms), 0) FROM kamar WHERE kost_id = k.id) > 0"]; $params = [];
+    $where = ["1=1"]; $params = [];
     if ($city)      { $where[] = "k.city LIKE ?";     $params[] = "%$city%"; }
     if ($type)      { $where[] = "k.type = ?";         $params[] = $type; }
     if ($max_price) { $where[] = "EXISTS (SELECT 1 FROM kamar WHERE kost_id=k.id AND price_per_month <= ?)"; $params[] = $max_price; }
