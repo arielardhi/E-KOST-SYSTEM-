@@ -2,7 +2,19 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-$base_url = "/" . basename(dirname(__DIR__)) . "/";
+$base_url = '/';
+if (!empty($_SERVER['SCRIPT_FILENAME']) && !empty($_SERVER['SCRIPT_NAME'])) {
+    $script_filename = str_replace('\\', '/', $_SERVER['SCRIPT_FILENAME']);
+    $script_name = str_replace('\\', '/', $_SERVER['SCRIPT_NAME']);
+    $project_root = str_replace('\\', '/', dirname(__DIR__));
+    if (substr($script_filename, -strlen($script_name)) === $script_name) {
+        $doc_root = substr($script_filename, 0, -strlen($script_name));
+        $base_url = '/' . trim(str_replace($doc_root, '', $project_root), '/') . '/';
+        if ($base_url === '//') {
+            $base_url = '/';
+        }
+    }
+}
 $current_page = basename($_SERVER['PHP_SELF']);
 
 // Load Database Config
@@ -133,7 +145,7 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
                             ?>
                             <?php if ($_SESSION['role'] !== 'admin'): ?>
                             <li class="nav-item me-2">
-                                <a class="nav-link position-relative" href="<?php echo $base_url; ?>modules/<?php echo $chat_module; ?>/chat.php" title="Pesan">
+                                <a class="nav-link position-relative" href="<?php echo $base_url; ?>modules/<?php echo $chat_module; ?>/pesan.php" title="Pesan">
                                     <i class="bi bi-chat-dots-fill fs-5"></i>
                                     <?php if ($unread_count > 0 || $unread_notifications_count > 0): ?>
                                         <span class="position-absolute bg-danger border border-white rounded-circle" style="top: 8px; right: 4px; width: 8px; height: 8px;"></span>
@@ -188,7 +200,7 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
                 ['label' => 'Kelola Kost', 'url' => $base_url . 'modules/owner/kost_manage.php', 'icon' => 'bi-house-gear'],
                 ['label' => 'Status Kamar', 'url' => $base_url . 'modules/owner/room_status.php', 'icon' => 'bi-door-open'],
                 ['label' => 'Booking Masuk', 'url' => $base_url . 'modules/owner/bookings.php', 'icon' => 'bi-calendar-check'],
-                ['label' => 'Chat', 'url' => $base_url . 'modules/owner/chat.php', 'icon' => 'bi-chat-dots', 'badge' => $unread_count],
+                ['label' => 'Chat', 'url' => $base_url . 'modules/owner/pesan.php', 'icon' => 'bi-chat-dots', 'badge' => $unread_count],
                 ['label' => 'Profil Saya', 'url' => $base_url . 'modules/owner/profile.php', 'icon' => 'bi-person-circle'],
             ];
         } else { // user / tenant
@@ -198,7 +210,7 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
                 ['label' => 'Pesanan Saya', 'url' => $base_url . 'modules/user/bookings.php', 'icon' => 'bi-calendar-check'],
                 ['label' => 'Review & Rating', 'url' => $base_url . 'modules/user/reviews.php', 'icon' => 'bi-star'],
                 ['label' => 'Favorit', 'url' => $base_url . 'modules/user/favorites.php', 'icon' => 'bi-heart'],
-                ['label' => 'Chat', 'url' => $base_url . 'modules/user/chat.php', 'icon' => 'bi-chat-dots', 'badge' => $unread_count],
+                ['label' => 'Chat', 'url' => $base_url . 'modules/user/pesan.php', 'icon' => 'bi-chat-dots', 'badge' => $unread_count],
                 ['label' => 'Profil Saya', 'url' => $base_url . 'modules/user/profile.php', 'icon' => 'bi-person-circle'],
             ];
         }
@@ -241,7 +253,7 @@ if (isset($_SESSION['user_id']) && isset($pdo)) {
         <!-- Brand -->
         <div class="sidebar-brand text-center text-lg-start">
             <a href="<?php echo $base_url; ?>index.php" class="sidebar-brand-link d-flex align-items-center justify-content-center justify-content-lg-start">
-                <img src="<?php echo $base_url; ?>assets/images/logo.png" alt="Logo" class="me-2 rounded" style="height: 32px; width: 32px; background-color: white; padding: 2px; object-fit: contain;">
+                <img src="<?php echo $base_url; ?>assets/images/logo.png" alt="Logo" class="me-2 rounded" style="height: 32px; width: 32px; background-color: transparent; object-fit: contain;">
                 <?php
                 $app_name_parts = explode(' ', $app_name, 2);
                 echo htmlspecialchars($app_name_parts[0]);

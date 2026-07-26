@@ -38,7 +38,7 @@ include '../../layouts/header.php';
                 <a href="dashboard.php" class="list-group-item list-group-item-action"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a>
                 <a href="bookings.php" class="list-group-item list-group-item-action"><i class="bi bi-calendar-check me-2"></i> Pesanan Saya</a>
                 <a href="favorites.php" class="list-group-item list-group-item-action active"><i class="bi bi-heart me-2"></i> Favorit</a>
-                <a href="chat.php" class="list-group-item list-group-item-action"><i class="bi bi-chat-dots me-2"></i> Chat</a>
+                <a href="pesan.php" class="list-group-item list-group-item-action"><i class="bi bi-chat-dots me-2"></i> Chat</a>
                 <a href="profile.php" class="list-group-item list-group-item-action"><i class="bi bi-person me-2"></i> Profil</a>
             </div>
         </div>
@@ -81,3 +81,4 @@ include '../../layouts/header.php';
 </div>
 
 <?php include '../../layouts/footer.php'; ?>
+

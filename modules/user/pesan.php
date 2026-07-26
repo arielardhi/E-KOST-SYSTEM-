@@ -68,8 +68,8 @@ include '../../layouts/header.php';
 
 <style>
 .chat-wrapper { height: calc(100vh - 160px); min-height: 500px; }
-.contact-list { height: 100%; overflow-y: auto; }
-.chat-messages { height: calc(100% - 130px); overflow-y: auto; background: #f0f2f5; padding: 16px; }
+.contact-list { flex-grow: 1; min-height: 0; overflow-y: auto; }
+.chat-messages { flex-grow: 1; min-height: 0; overflow-y: auto; background: #f0f2f5; padding: 16px; }
 .bubble { max-width: 72%; padding: 10px 14px; border-radius: 18px; margin-bottom: 8px; word-break: break-word; }
 .bubble.me { background: #001ee1; color: #fff; border-bottom-right-radius: 4px; }
 .bubble.them { background: #fff; color: #222; border-bottom-left-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
@@ -92,10 +92,10 @@ include '../../layouts/header.php';
 </style>
 
 <div class="container-fluid px-3 px-md-4">
-    <div class="row g-0 chat-wrapper" style="border: 2px solid #ddd; border-radius: 12px; overflow: hidden; background:#fff;">
+    <div class="row g-0 chat-wrapper <?php echo $receiver_id ? 'conversation-open' : ''; ?>" style="border: 2px solid #ddd; border-radius: 12px; overflow: hidden; background:#fff;">
 
         <!-- SIDEBAR KONTAK -->
-        <div class="col-md-4 col-lg-3 border-end">
+        <div class="col-md-4 col-lg-3 border-end h-100">
             <div class="d-flex flex-column h-100">
                 <div class="p-3 border-bottom" style="background:#001ee1;">
                     <h6 class="mb-0 text-white fw-bold"><i class="bi bi-chat-dots-fill me-2"></i>Pesan</h6>
@@ -126,7 +126,7 @@ include '../../layouts/header.php';
                     <?php endif; ?>
 
                     <?php foreach ($contacts as $c): ?>
-                        <a href="chat.php?receiver_id=<?= $c['id'] ?>"
+                        <a href="pesan.php?receiver_id=<?= $c['id'] ?>"
                            class="contact-item <?= $receiver_id == $c['id'] ? 'active' : '' ?> p-3 d-flex align-items-center gap-3 text-decoration-none text-dark">
                             <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
                                  style="width:42px;height:42px;background:<?= $receiver_id == $c['id'] ? '#001ee1' : '#eef1ff' ?>;">
@@ -150,10 +150,13 @@ include '../../layouts/header.php';
         </div>
 
         <!-- AREA CHAT -->
-        <div class="col-md-8 col-lg-9 d-flex flex-column">
+        <div class="col-md-8 col-lg-9 d-flex flex-column h-100">
             <?php if ($receiver_id && $receiver_info): ?>
                 <!-- Header chat -->
                 <div class="p-3 border-bottom d-flex align-items-center gap-3" style="background:#fff;">
+                    <a href="pesan.php" class="btn btn-outline-dark d-md-none border-0 p-1" title="Kembali ke Kontak">
+                        <i class="bi bi-arrow-left fs-4"></i>
+                    </a>
                     <div class="rounded-circle d-flex align-items-center justify-content-center"
                          style="width:42px;height:42px;background:#eef1ff;flex-shrink:0;">
                         <i class="bi bi-person-fill" style="color:#001ee1;font-size:1.2rem;"></i>
@@ -206,7 +209,7 @@ include '../../layouts/header.php';
                 const msgInput    = document.getElementById('msg-input');
                 const sendBtn     = document.getElementById('send-btn');
                 const baseUrl     = window.BASE_URL || '/e-kost-system/';
-                const apiBase     = baseUrl + 'modules/chat_api.php';
+                const apiBase     = baseUrl + 'modules/pesan_api.php';
 
                 function scrollBottom() {
                     chatBox.scrollTop = chatBox.scrollHeight;

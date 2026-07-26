@@ -21,32 +21,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['update_profile'])) {
     $email = $_POST['email'];
     $phone = $_POST['phone'];
     
-    // Handle Avatar Upload
-    $avatar_name = $user['avatar'];
-    if (!empty($_FILES['avatar']['name'])) {
-        $target_dir = "../../uploads/avatars/";
-        if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
-        
-        $file_extension = pathinfo($_FILES["avatar"]["name"], PATHINFO_EXTENSION);
-        $avatar_name = "avatar_" . $user_id . "_" . time() . "." . $file_extension;
-        $target_file = $target_dir . $avatar_name;
+    $validated_phone = validate_indonesian_phone($phone);
+    if (!$validated_phone) {
+        $error = "Nomor Handphone / WhatsApp tidak valid! Harus berupa nomor HP Indonesia aktif (contoh: 081234567890) dengan panjang 10-14 digit.";
+    } else {
+        // Handle Avatar Upload
+        $avatar_name = $user['avatar'];
+        if (!empty($_FILES['avatar']['name'])) {
+            $target_dir = "../../uploads/avatars/";
+            if (!file_exists($target_dir)) mkdir($target_dir, 0777, true);
+            
+            $file_extension = pathinfo($_FILES["avatar"]["name"], PATHINFO_EXTENSION);
+            $avatar_name = "avatar_" . $user_id . "_" . time() . "." . $file_extension;
+            $target_file = $target_dir . $avatar_name;
 
-        if (move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file)) {
-            // Success upload
+            if (move_uploaded_file($_FILES["avatar"]["tmp_name"], $target_file)) {
+                // Success upload
+            }
         }
-    }
 
-    try {
-        $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, avatar = ? WHERE id = ?");
-        $stmt->execute([$full_name, $email, $phone, $avatar_name, $user_id]);
-        $success = "Profil pemilik berhasil diperbarui!";
-        
-        // Refresh data
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$user_id]);
-        $user = $stmt->fetch();
-    } catch (Exception $e) {
-        $error = "Gagal memperbarui profil: " . $e->getMessage();
+        try {
+            $stmt = $pdo->prepare("UPDATE users SET full_name = ?, email = ?, phone = ?, avatar = ? WHERE id = ?");
+            $stmt->execute([$full_name, $email, $validated_phone, $avatar_name, $user_id]);
+            $success = "Profil pemilik berhasil diperbarui!";
+            
+            // Refresh data
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+            $stmt->execute([$user_id]);
+            $user = $stmt->fetch();
+        } catch (Exception $e) {
+            $error = "Gagal memperbarui profil: " . $e->getMessage();
+        }
     }
 }
 
@@ -83,7 +88,7 @@ include '../../layouts/header.php';
                 <a href="kost_manage.php" class="list-group-item list-group-item-action"><i class="bi bi-house me-2"></i> Kelola Kost</a>
                 <a href="bookings.php" class="list-group-item list-group-item-action"><i class="bi bi-calendar-check me-2"></i> Pesanan Masuk</a>
                 <a href="profile.php" class="list-group-item list-group-item-action active"><i class="bi bi-person me-2"></i> Profil</a>
-                <a href="chat.php" class="list-group-item list-group-item-action"><i class="bi bi-chat-dots me-2"></i> Chat</a>
+                <a href="pesan.php" class="list-group-item list-group-item-action"><i class="bi bi-chat-dots me-2"></i> Chat</a>
             </div>
         </div>
 
@@ -98,7 +103,7 @@ include '../../layouts/header.php';
                     <div class="alert alert-success border-3 rounded-0 shadow-sm mb-4"><?php echo $success; ?></div>
                 <?php endif; ?>
 
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" enctype="multipart/form-data" id="profileForm">
                     <div class="row align-items-center mb-5">
                         <div class="col-md-3 text-center mb-3 mb-md-0">
                             <div class="position-relative d-inline-block">
@@ -172,4 +177,25 @@ include '../../layouts/header.php';
     </div>
 </div>
 
+<script>
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    const phoneVal = phoneInput.value.replace(/[^\d+]/g, '');
+    let cleanPhone = phoneVal;
+    if (cleanPhone.startsWith('+628')) {
+        cleanPhone = '628' + cleanPhone.slice(4);
+    } else if (cleanPhone.startsWith('+')) {
+        cleanPhone = cleanPhone.slice(1);
+    }
+    
+    const isValid = /^08\d{8,12}$/.test(cleanPhone) || /^628\d{8,12}$/.test(cleanPhone);
+    if (!isValid) {
+        e.preventDefault();
+        alert('Nomor Handphone / WhatsApp tidak valid! Harus berupa nomor HP Indonesia aktif (contoh: 081234567890) dengan panjang 10-14 digit.');
+        phoneInput.focus();
+    }
+});
+</script>
+
 <?php include '../../layouts/footer.php'; ?>
+

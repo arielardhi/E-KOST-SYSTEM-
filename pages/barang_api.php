@@ -19,7 +19,6 @@
     <div class="card bg-primary text-white p-4 mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, var(--primary) 0%, #312e81 100%) !important;">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div>
-                <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:1px;opacity:.8;margin-bottom:4px;font-weight:700;">🛒 React + Axios · E-KOST Internal API</div>
                 <h1 style="font-size:clamp(1.4rem,4vw,2rem);font-weight:800;letter-spacing:-0.02em;margin:0;">Katalog Barang Kebutuhan Kos</h1>
                 <div style="font-size:.85rem;opacity:.9;margin-top:6px;">Temukan semua kebutuhan kos kamu di satu tempat</div>
             </div>

@@ -4,7 +4,11 @@
  * Endpoint: /e-kost-system/modules/api/barang.php
  */
 require_once '../../config/database.php';
-$base_url = "/" . basename(dirname(dirname(__DIR__))) . "/";
+if (isset($_SERVER['SERVER_NAME']) && ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_NAME'] === '127.0.0.1')) {
+    $base_url = "/" . basename(dirname(dirname(__DIR__))) . "/";
+} else {
+    $base_url = "/";
+}
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
 

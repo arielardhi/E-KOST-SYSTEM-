@@ -106,6 +106,7 @@ include '../../layouts/header.php';
                                     <th>Penyewa</th>
                                     <th>Kost / Kamar</th>
                                     <th>Total Bayar</th>
+                                    <th>Waktu Booking</th>
                                     <th>Status Pesanan</th>
                                     <th>Bukti Bayar</th>
                                     <th>Aksi</th>
@@ -114,7 +115,7 @@ include '../../layouts/header.php';
                             <tbody>
                                 <?php if (empty($bookings)): ?>
                                     <tr>
-                                        <td colspan="6" class="text-center py-4">Belum ada pesanan masuk.</td>
+                                        <td colspan="7" class="text-center py-4">Belum ada pesanan masuk.</td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($bookings as $b): ?>
@@ -128,6 +129,10 @@ include '../../layouts/header.php';
                                                 <small class="text-muted"><?php echo $b['room_name']; ?></small>
                                             </td>
                                             <td>Rp <?php echo number_format($b['total_price'], 0, ',', '.'); ?></td>
+                                            <td>
+                                                <strong><?php echo date('H:i', strtotime($b['created_at'])); ?></strong><br>
+                                                <small class="text-muted"><?php echo date('d M Y', strtotime($b['created_at'])); ?></small>
+                                            </td>
                                             <td>
                                                 <span class="badge bg-<?php 
                                                     echo $b['status'] == 'pending' ? 'warning' : 
@@ -154,7 +159,7 @@ include '../../layouts/header.php';
                                             <td>
                                                 <div class="btn-group">
                                                     <a href="booking_manage.php?id=<?php echo $b['id']; ?>" class="btn btn-sm btn-outline-primary" title="Kelola">Kelola</a>
-                                                    <a href="chat.php?receiver_id=<?php echo $b['user_id']; ?>" class="btn btn-sm btn-outline-info" title="Chat dengan Penyewa"><i class="bi bi-chat-dots-fill"></i></a>
+                                                    <a href="pesan.php?receiver_id=<?php echo $b['user_id']; ?>" class="btn btn-sm btn-outline-info" title="Chat dengan Penyewa"><i class="bi bi-chat-dots-fill"></i></a>
                                                     <?php if ($b['status'] == 'pending'): ?>
                                                         <a href="?action=confirm&id=<?php echo $b['id']; ?>" class="btn btn-sm btn-success" onclick="return confirm('Konfirmasi pesanan ini?')">Terima</a>
                                                         <a href="?action=cancel&id=<?php echo $b['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Batalkan pesanan ini?')">Tolak</a>
@@ -174,3 +179,4 @@ include '../../layouts/header.php';
 </div>
 
 <?php include '../../layouts/footer.php'; ?>
+

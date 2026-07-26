@@ -325,7 +325,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             list.style.display = 'none';
         }
     }
-    // Set active radio based on state param
+
+    function removeMockAccount(email) {
+        if (confirm(`Hapus akun simulasi ${email} dari perangkat ini?`)) {
+            try {
+                let localAccounts = JSON.parse(localStorage.getItem('mock_google_accounts') || '[]');
+                localAccounts = localAccounts.filter(acc => acc.email !== email);
+                localStorage.setItem('mock_google_accounts', JSON.stringify(localAccounts));
+                location.reload();
+            } catch(e) {}
+        }
+    }
+
+    // Set active radio based on state param and load local mock accounts
     window.addEventListener('DOMContentLoaded', () => {
         const stateRole = "<?= $state ?>";
         if (stateRole === 'owner') {
@@ -334,6 +346,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             document.getElementById('roleUser').checked = true;
             document.getElementById('customRole').value = 'user';
+        }
+
+        // Load local accounts from localStorage
+        let localAccounts = [];
+        try {
+            localAccounts = JSON.parse(localStorage.getItem('mock_google_accounts') || '[]');
+        } catch(e) {}
+
+        const container = document.querySelector('.accounts-container');
+        const customBtn = document.querySelector('.custom-account-btn');
+
+        localAccounts.forEach(acc => {
+            const item = document.createElement('a');
+            item.className = 'account-item';
+            
+            // Generate mock code URL redirect
+            const profile = {
+                email: acc.email,
+                name: acc.name,
+                picture: acc.avatar || ''
+            };
+            const mockCode = 'MOCK_CODE_' + btoa(unescape(encodeURIComponent(JSON.stringify(profile))));
+            const targetUrl = "<?= $redirect_uri ?: 'google_auth.php' ?>";
+            const separator = targetUrl.includes('?') ? '&' : '?';
+            const href = `${targetUrl}${separator}code=${encodeURIComponent(mockCode)}&state=${encodeURIComponent(acc.role)}`;
+            
+            item.href = href;
+            
+            const initial = (acc.name || acc.email).substring(0, 1).toUpperCase();
+            
+            item.innerHTML = `
+                <div class="account-avatar">
+                    ${acc.avatar ? `<img src="${acc.avatar}" alt="Avatar">` : initial}
+                </div>
+                <div class="account-info">
+                    <div class="account-name">${acc.name} <span class="badge bg-secondary ms-1" style="font-size:9px;">Lokal</span></div>
+                    <div class="account-email">${acc.email}</div>
+                </div>
+                <div class="account-role me-2">${acc.role.toUpperCase()}</div>
+                <button class="btn btn-sm btn-outline-danger p-1" style="line-height:1; font-size: 11px;" title="Hapus dari Perangkat" onclick="event.preventDefault(); removeMockAccount('${acc.email}')">
+                    <i class="bi bi-trash"></i>
+                </button>
+            `;
+            // Insert before custom account button
+            container.insertBefore(item, customBtn);
+        });
+    });
+
+    // Save custom accounts to localStorage on submit
+    document.getElementById('customForm').addEventListener('submit', function(e) {
+        const email = document.getElementById('floatingEmail').value.trim();
+        const name = document.getElementById('floatingName').value.trim();
+        const avatar = document.getElementById('floatingAvatar').value.trim();
+        const role = document.getElementById('customRole').value;
+
+        if (email && name) {
+            let localAccounts = [];
+            try {
+                localAccounts = JSON.parse(localStorage.getItem('mock_google_accounts') || '[]');
+            } catch(err) {}
+
+            // Prevent duplicates
+            localAccounts = localAccounts.filter(acc => acc.email !== email);
+            localAccounts.push({ email, name, avatar, role });
+            localStorage.setItem('mock_google_accounts', JSON.stringify(localAccounts));
         }
     });
 </script>

@@ -879,3 +879,46 @@ footer.bg-dark hr.border-secondary {
     border-color: rgba(255, 255, 255, 0.15) !important;
     /* Softer border line */
 }
+
+/* ── MOBILE RESPONSIVE LAYOUT HELPERS ── */
+@media (max-width: 991.98px) {
+    .content-wrapper {
+        min-height: calc(100vh - 60px) !important;
+    }
+    .main-content {
+        padding: 1.25rem 1rem !important;
+    }
+    .filter-sidebar {
+        position: static !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    .offcanvas-body .filter-sidebar {
+        border-radius: 0 !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .chat-wrapper {
+        height: calc(100vh - 120px) !important;
+    }
+    .chat-wrapper .col-md-4 {
+        width: 100% !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column;
+    }
+    .chat-wrapper .col-md-8 {
+        display: none !important;
+    }
+    
+    .chat-wrapper.conversation-open .col-md-4 {
+        display: none !important;
+    }
+    .chat-wrapper.conversation-open .col-md-8 {
+        display: flex !important;
+        width: 100% !important;
+        height: 100% !important;
+        flex-direction: column;
+    }
+}

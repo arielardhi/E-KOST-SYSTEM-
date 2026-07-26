@@ -100,89 +100,102 @@ $all_facilities = ['WiFi','AC','Parkir Motor','Parkir Mobil','Dapur Bersama','Ka
     <div class="row g-4">
         <!-- FILTER SIDEBAR -->
         <div class="col-lg-3">
-            <div class="card filter-sidebar">
-                <div class="card-header d-flex align-items-center justify-content-between">
-                    <span class="fw-700">
-                        <i class="bi bi-funnel-fill me-2" style="color:var(--primary)"></i>Filter
-                        <?php if ($active_filters > 0): ?>
-                        <span class="filter-active-badge"><?= $active_filters ?></span>
-                        <?php endif; ?>
-                    </span>
-                    <?php if ($active_filters > 0): ?>
-                    <a href="kost_list.php" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.75rem">Reset</a>
-                    <?php endif; ?>
+            <!-- Mobile Toggle Button (Visible only on mobile) -->
+            <button class="btn btn-primary d-lg-none w-100 mb-3 text-white fw-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas" aria-controls="filterOffcanvas">
+                <i class="bi bi-funnel-fill me-2"></i>Filter Pencarian
+            </button>
+
+            <!-- Offcanvas Sidebar Wrapper -->
+            <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
+                <div class="offcanvas-header bg-light border-bottom d-lg-none">
+                    <h5 class="offcanvas-title fw-bold" id="filterOffcanvasLabel"><i class="bi bi-funnel-fill me-2" style="color:var(--primary)"></i>Filter Pencarian</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#filterOffcanvas" aria-label="Close"></button>
                 </div>
-                <div class="card-body">
-                    <form method="GET" id="filterForm">
-
-                        <!-- Lokasi -->
-                        <div class="mb-4">
-                            <div class="filter-section-title"><i class="bi bi-geo-alt me-1"></i>Lokasi / Kota</div>
-                            <select name="city" class="form-select form-select-sm" onchange="this.form.submit()">
-                                <option value="">Semua Kota</option>
-                                <?php foreach ($cities as $c): ?>
-                                <option value="<?= $c ?>" <?= $city == $c ? 'selected' : '' ?>><?= $c ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                <div class="offcanvas-body p-0">
+                    <div class="card filter-sidebar w-100">
+                        <div class="card-header d-flex align-items-center justify-content-between">
+                            <span class="fw-700">
+                                <i class="bi bi-funnel-fill me-2" style="color:var(--primary)"></i>Filter
+                                <?php if ($active_filters > 0): ?>
+                                <span class="filter-active-badge"><?= $active_filters ?></span>
+                                <?php endif; ?>
+                            </span>
+                            <?php if ($active_filters > 0): ?>
+                            <a href="kost_list.php" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size:.75rem">Reset</a>
+                            <?php endif; ?>
                         </div>
+                        <div class="card-body">
+                            <form method="GET" id="filterForm">
+                                <!-- Lokasi -->
+                                <div class="mb-4">
+                                    <div class="filter-section-title"><i class="bi bi-geo-alt me-1"></i>Lokasi / Kota</div>
+                                    <select name="city" class="form-select form-select-sm" onchange="this.form.submit()">
+                                        <option value="">Semua Kota</option>
+                                        <?php foreach ($cities as $c): ?>
+                                        <option value="<?= $c ?>" <?= $city == $c ? 'selected' : '' ?>><?= $c ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
 
-                        <!-- Tipe Kost -->
-                        <div class="mb-4">
-                            <div class="filter-section-title"><i class="bi bi-people me-1"></i>Jenis Kost</div>
-                            <div class="d-flex flex-column gap-1">
-                                <?php foreach ([''=>'Semua','Putra'=>'Putra','Putri'=>'Putri','Campur'=>'Campur'] as $val => $label): ?>
-                                <label class="facility-check">
-                                    <input type="radio" name="type" value="<?= $val ?>" <?= $type === $val ? 'checked' : '' ?> onchange="this.form.submit()">
-                                    <span><?= $label ?></span>
-                                </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
+                                <!-- Tipe Kost -->
+                                <div class="mb-4">
+                                    <div class="filter-section-title"><i class="bi bi-people me-1"></i>Jenis Kost</div>
+                                    <div class="d-flex flex-column gap-1">
+                                        <?php foreach ([''=>'Semua','Putra'=>'Putra','Putri'=>'Putri','Campur'=>'Campur'] as $val => $label): ?>
+                                        <label class="facility-check">
+                                            <input type="radio" name="type" value="<?= $val ?>" <?= $type === $val ? 'checked' : '' ?> onchange="this.form.submit()">
+                                            <span><?= $label ?></span>
+                                        </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
 
-                        <!-- Harga Range -->
-                        <div class="mb-4">
-                            <div class="filter-section-title"><i class="bi bi-cash me-1"></i>Rentang Harga</div>
-                            <div class="mb-2">
-                                <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--text-muted)">Min: <strong style="color:var(--primary)" id="minLabel">Rp <?= number_format($min_price,0,',','.') ?></strong></label>
-                                <input type="range" name="min_price" class="range-input" min="0" max="5000000" step="100000" value="<?= $min_price ?>" id="minRange" oninput="document.getElementById('minLabel').textContent='Rp '+Number(this.value).toLocaleString('id-ID')">
-                            </div>
-                            <div>
-                                <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--text-muted)">Max: <strong style="color:var(--primary)" id="maxLabel">Rp <?= $max_price ? number_format($max_price,0,',','.') : 'Semua' ?></strong></label>
-                                <input type="range" name="max_price" class="range-input" min="0" max="10000000" step="100000" value="<?= $max_price ?: 10000000 ?>" id="maxRange" oninput="document.getElementById('maxLabel').textContent=this.value>=10000000?'Semua':'Rp '+Number(this.value).toLocaleString('id-ID')">
-                            </div>
-                        </div>
+                                <!-- Harga Range -->
+                                <div class="mb-4">
+                                    <div class="filter-section-title"><i class="bi bi-cash me-1"></i>Rentang Harga</div>
+                                    <div class="mb-2">
+                                        <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--text-muted)">Min: <strong style="color:var(--primary)" id="minLabel">Rp <?= number_format($min_price,0,',','.') ?></strong></label>
+                                        <input type="range" name="min_price" class="range-input" min="0" max="5000000" step="100000" value="<?= $min_price ?>" id="minRange" oninput="document.getElementById('minLabel').textContent='Rp '+Number(this.value).toLocaleString('id-ID')">
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size:.78rem;font-weight:600;color:var(--text-muted)">Max: <strong style="color:var(--primary)" id="maxLabel">Rp <?= $max_price ? number_format($max_price,0,',','.') : 'Semua' ?></strong></label>
+                                        <input type="range" name="max_price" class="range-input" min="0" max="10000000" step="100000" value="<?= $max_price ?: 10000000 ?>" id="maxRange" oninput="document.getElementById('maxLabel').textContent=this.value>=10000000?'Semua':'Rp '+Number(this.value).toLocaleString('id-ID')">
+                                    </div>
+                                </div>
 
-                        <!-- Fasilitas -->
-                        <div class="mb-4">
-                            <div class="filter-section-title"><i class="bi bi-stars me-1"></i>Fasilitas</div>
-                            <div style="max-height:200px;overflow-y:auto">
-                                <?php foreach ($all_facilities as $f): ?>
-                                <label class="facility-check">
-                                    <input type="checkbox" name="facilities[]" value="<?= $f ?>" <?= in_array($f, $facilities) ? 'checked' : '' ?>>
-                                    <span><?= $f ?></span>
-                                </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
+                                <!-- Fasilitas -->
+                                <div class="mb-4">
+                                    <div class="filter-section-title"><i class="bi bi-stars me-1"></i>Fasilitas</div>
+                                    <div style="max-height:200px;overflow-y:auto">
+                                        <?php foreach ($all_facilities as $f): ?>
+                                        <label class="facility-check">
+                                            <input type="checkbox" name="facilities[]" value="<?= $f ?>" <?= in_array($f, $facilities) ? 'checked' : '' ?>>
+                                            <span><?= $f ?></span>
+                                        </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
 
-                        <!-- Status Kamar -->
-                        <div class="mb-4">
-                            <div class="filter-section-title"><i class="bi bi-door-open me-1"></i>Status Kamar</div>
-                            <div class="d-flex flex-column gap-1">
-                                <?php foreach ([''=>'Semua','available'=>'Ada Kamar Kosong','full'=>'Penuh'] as $val => $label): ?>
-                                <label class="facility-check">
-                                    <input type="radio" name="room_status" value="<?= $val ?>" <?= $status === $val ? 'checked' : '' ?>>
-                                    <span><?= $label ?></span>
-                                </label>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
+                                <!-- Status Kamar -->
+                                <div class="mb-4">
+                                    <div class="filter-section-title"><i class="bi bi-door-open me-1"></i>Status Kamar</div>
+                                    <div class="d-flex flex-column gap-1">
+                                        <?php foreach ([''=>'Semua','available'=>'Ada Kamar Kosong','full'=>'Penuh'] as $val => $label): ?>
+                                        <label class="facility-check">
+                                            <input type="radio" name="room_status" value="<?= $val ?>" <?= $status === $val ? 'checked' : '' ?>>
+                                            <span><?= $label ?></span>
+                                        </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
 
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary fw-700 flex-grow-1"><i class="bi bi-search me-1"></i>Cari</button>
-                            <a href="kost_list.php" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary fw-700 flex-grow-1 text-white"><i class="bi bi-search me-1"></i>Cari</button>
+                                    <a href="kost_list.php" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+                                </div>
+                            </form>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>

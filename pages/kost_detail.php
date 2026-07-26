@@ -265,7 +265,7 @@ $avg_rating = round($rating_stats['avg_rating'] ?? 0, 1);
                         <?php if (isset($_SESSION['user_id'])): ?>
                             <?php if ($_SESSION['role'] !== 'admin'): ?>
                                 <?php $chat_role = ($_SESSION['role'] === 'owner') ? 'owner' : 'user'; ?>
-                                <a href="<?php echo $base_url; ?>modules/<?php echo $chat_role; ?>/chat.php?receiver_id=<?php echo $kost['owner_id']; ?>"
+                                <a href="<?php echo $base_url; ?>modules/<?php echo $chat_role; ?>/pesan.php?receiver_id=<?php echo $kost['owner_id']; ?>"
                                    class="btn btn-outline-dark fw-black py-3 border border-3 border-dark" style="box-shadow: 4px 4px 0 #000;">
                                    <i class="bi bi-chat-dots me-2"></i> CHAT DI SISTEM
                                 </a>

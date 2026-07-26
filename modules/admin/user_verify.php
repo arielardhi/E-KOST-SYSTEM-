@@ -139,7 +139,7 @@ include '../../layouts/header.php';
         <div class="col-6 col-md-3">
             <div class="card p-3 text-center" style="border-top:3px solid #DC2626">
                 <div class="fw-800 mb-1" style="font-size:2rem;color:#DC2626"><?= $rejected ?></div>
-                <div class="text-muted small fw-600">Rejected</div>
+                <div class="text-muted small fw-600">Suspended</div>
             </div>
         </div>
     </div>
@@ -162,7 +162,7 @@ include '../../layouts/header.php';
                 <a href="?status=all<?= $search ? '&search='.urlencode($search) : '' ?>" class="filter-pill <?= $filter==='all' ? 'active' : '' ?>">Semua</a>
                 <a href="?status=verified<?= $search ? '&search='.urlencode($search) : '' ?>" class="filter-pill <?= $filter==='verified' ? 'active' : '' ?>">✓ Verified</a>
                 <a href="?status=pending<?= $search ? '&search='.urlencode($search) : '' ?>" class="filter-pill <?= $filter==='pending' ? 'active' : '' ?>">⏳ Pending</a>
-                <a href="?status=rejected<?= $search ? '&search='.urlencode($search) : '' ?>" class="filter-pill <?= $filter==='rejected' ? 'active' : '' ?>">✗ Rejected</a>
+                <a href="?status=rejected<?= $search ? '&search='.urlencode($search) : '' ?>" class="filter-pill <?= $filter==='rejected' ? 'active' : '' ?>">✗ Suspended</a>
             </div>
         </div>
     </div>
@@ -193,7 +193,7 @@ include '../../layouts/header.php';
                             
                             $st = $u['status'];
                             $badgeCls = ($st === 'pending') ? 'warning' : (($st === 'verified') ? 'success' : 'danger');
-                            $stLabel = ($st === 'pending') ? 'Pending' : (($st === 'verified') ? 'Verified' : 'Rejected');
+                            $stLabel = ($st === 'pending') ? 'Pending' : (($st === 'verified') ? 'Verified' : 'Suspended');
                         ?>
                         <tr class="table-row-hover">
                             <td>
@@ -244,13 +244,13 @@ include '../../layouts/header.php';
 function doAction(action, userId, username) {
     const isApprove = action === 'approve';
     Swal.fire({
-        title: isApprove ? `Approve "${username}"?` : `Reject "${username}"?`,
-        text: isApprove ? 'User akan mendapatkan akses penuh ke platform.' : 'User akan ditolak aksesnya ke platform.',
+        title: isApprove ? `Approve "${username}"?` : `Suspend "${username}"?`,
+        text: isApprove ? 'User akan mendapatkan akses penuh ke platform.' : 'Akses user ke platform akan ditangguhkan (Suspended).',
         icon: isApprove ? 'question' : 'warning',
         showCancelButton: true,
         confirmButtonColor: isApprove ? '#059669' : '#DC2626',
         cancelButtonColor: '#5C4D78',
-        confirmButtonText: isApprove ? '<i class="bi bi-check-lg me-1"></i>Ya, Approve' : '<i class="bi bi-x-lg me-1"></i>Ya, Reject',
+        confirmButtonText: isApprove ? '<i class="bi bi-check-lg me-1"></i>Ya, Approve' : '<i class="bi bi-x-lg me-1"></i>Ya, Suspend',
         cancelButtonText: 'Batal',
     }).then(result => {
         if (result.isConfirmed) {
@@ -266,7 +266,7 @@ function doAction(action, userId, username) {
                 if (data.success) {
                     Swal.fire({
                         icon: 'success',
-                        title: isApprove ? 'User Diapprove!' : 'User Direject!',
+                        title: isApprove ? 'User Diapprove!' : 'User Disuspend!',
                         text: `Status "${username}" telah diperbarui.`,
                         timer: 2000,
                         showConfirmButton: false,

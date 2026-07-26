@@ -93,8 +93,7 @@ include '../../layouts/header.php';
                                 <label class="form-label">Status Verifikasi</label>
                                 <select name="status" class="form-select" required>
                                     <option value="verified">Verified</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="rejected">Rejected</option>
+                                    <option value="rejected">Suspended</option>
                                 </select>
                             </div>
                         </div>

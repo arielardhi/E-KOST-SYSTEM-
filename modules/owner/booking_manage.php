@@ -210,7 +210,7 @@ include '../../layouts/header.php';
                             <a href="https://wa.me/<?php echo preg_replace('/[^0-9]/', '', $booking['tenant_phone']); ?>" target="_blank" class="fw-semibold me-2">
                                 <?php echo htmlspecialchars($booking['tenant_phone']); ?> <i class="bi bi-whatsapp ms-1 text-success"></i>
                             </a>
-                            <a href="chat.php?receiver_id=<?php echo $booking['user_id']; ?>" class="btn btn-sm btn-primary">
+                            <a href="pesan.php?receiver_id=<?php echo $booking['user_id']; ?>" class="btn btn-sm btn-primary">
                                 <i class="bi bi-chat-dots-fill me-1"></i> Chat Hubungi
                             </a>
                         </div>
@@ -382,3 +382,4 @@ include '../../layouts/header.php';
 </div>
 
 <?php include '../../layouts/footer.php'; ?>
+

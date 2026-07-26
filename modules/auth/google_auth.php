@@ -19,17 +19,17 @@ if (isset($_GET['code'])) {
     $avatar = '';
     $profile_http_code = 0;
 
-    // Check if code is from mock google authentication
-    if (strpos($code, 'MOCK_CODE_') === 0) {
-        $encoded_payload = substr($code, 10);
-        $profile_data = json_decode(base64_decode($encoded_payload), true);
-        if ($profile_data && isset($profile_data['email'])) {
-            $email  = $profile_data['email'];
-            $name   = $profile_data['name'] ?? '';
+    $is_mock = (substr($code, 0, 10) === 'MOCK_CODE_');
+    if ($is_mock) {
+        $encoded_profile = substr($code, 10);
+        $profile_data = json_decode(base64_decode($encoded_profile), true);
+        if ($profile_data) {
+            $email = $profile_data['email'] ?? '';
+            $name  = $profile_data['name'] ?? '';
             $avatar = $profile_data['picture'] ?? '';
             $profile_http_code = 200;
         } else {
-            $error = "Data mock Google tidak valid.";
+            $error = "Data profil simulasi tidak valid.";
         }
     } else {
         // 1. Tukar Code Otorisasi dengan Access Token (Real Google OAuth)
@@ -95,7 +95,7 @@ if (isset($_GET['code'])) {
                 if ($user['status'] === 'pending') {
                     $error = "Akun Anda sedang dalam proses verifikasi oleh Admin.";
                 } elseif ($user['status'] === 'rejected') {
-                    $error = "Pendaftaran akun Anda ditolak oleh Admin.";
+                    $error = "Akun Anda ditangguhkan (Suspended) oleh Admin.";
                 } else {
                     // Jika user ada, login kan langsung
                     $_SESSION['user_id']  = $user['id'];

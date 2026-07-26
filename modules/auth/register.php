@@ -25,17 +25,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $full_name = $_POST['full_name'];
     $phone     = $_POST['phone'];
 
-    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
-    $stmt->execute([$username, $email]);
-    if ($stmt->fetch()) {
-        $error = "Username atau Email sudah terdaftar!";
+    $validated_phone = validate_indonesian_phone($phone);
+    if (!$validated_phone) {
+        $error = "Nomor Handphone / WhatsApp tidak valid! Harus berupa nomor HP Indonesia aktif (contoh: 081234567890) dengan panjang 10-14 digit.";
     } else {
-        $status = 'verified';
-        $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        if ($stmt->execute([$username, $email, $password, $role, $full_name, $phone, $status])) {
-            $success = "Registrasi berhasil! Silakan masuk ke akun Anda.";
+        $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+        $stmt->execute([$username, $email]);
+        if ($stmt->fetch()) {
+            $error = "Username atau Email sudah terdaftar!";
         } else {
-            $error = "Terjadi kesalahan saat registrasi.";
+            $status = 'verified';
+            $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, full_name, phone, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            if ($stmt->execute([$username, $email, $password, $role, $full_name, $validated_phone, $status])) {
+                $success = "Registrasi berhasil! Silakan masuk ke akun Anda.";
+            } else {
+                $error = "Terjadi kesalahan saat registrasi.";
+            }
         }
     }
 }
@@ -409,6 +414,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <i class="bi bi-check-circle-fill"></i>
                     <?= $success ?> <a href="login.php" style="color:#5BC9CC;font-weight:600;margin-left:6px;">Login →</a>
                 </div>
+                <script>
+                    (function() {
+                        try {
+                            let emails = JSON.parse(localStorage.getItem('registered_emails') || '[]');
+                            const newEmail = <?php echo json_encode($email); ?>;
+                            if (newEmail && !emails.includes(newEmail)) {
+                                emails.push(newEmail);
+                                localStorage.setItem('registered_emails', JSON.stringify(emails));
+                            }
+                        } catch(e) {
+                            console.error('Gagal menyimpan email ke localStorage:', e);
+                        }
+                    })();
+                </script>
             <?php endif; ?>
 
             <form method="POST" id="regForm">
@@ -510,13 +529,31 @@ function startGoogleAuth() {
     const clientId = "<?php echo GOOGLE_CLIENT_ID; ?>";
     const redirectUri = "<?php echo GOOGLE_REDIRECT_URI; ?>";
     const role = document.getElementById('roleInput').value;
-    if (clientId === 'YOUR_GOOGLE_CLIENT_ID') {
+    if (clientId === 'YOUR_GOOGLE_CLIENT_ID' || clientId === '') {
         window.location.href = `mock_google.php?redirect_uri=${encodeURIComponent(redirectUri)}&state=${encodeURIComponent(role)}`;
     } else {
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20profile%20email&state=${encodeURIComponent(role)}`;
         window.location.href = authUrl;
     }
 }
+// Client-side phone number validation on submit
+document.getElementById('regForm').addEventListener('submit', function(e) {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    const phoneVal = phoneInput.value.replace(/[^\d+]/g, '');
+    let cleanPhone = phoneVal;
+    if (cleanPhone.startsWith('+628')) {
+        cleanPhone = '628' + cleanPhone.slice(4);
+    } else if (cleanPhone.startsWith('+')) {
+        cleanPhone = cleanPhone.slice(1);
+    }
+    
+    const isValid = /^08\d{8,12}$/.test(cleanPhone) || /^628\d{8,12}$/.test(cleanPhone);
+    if (!isValid) {
+        e.preventDefault();
+        alert('Nomor Handphone / WhatsApp tidak valid! Harus berupa nomor HP Indonesia aktif (contoh: 081234567890) dengan panjang 10-14 digit.');
+        phoneInput.focus();
+    }
+});
 </script>
 </body>
 </html>

@@ -18,15 +18,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-    $stmt->execute([$username]);
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+    $stmt->execute([$username, $username]);
     $user = $stmt->fetch();
 
     if ($user && password_verify($password, $user['password'])) {
         if ($user['status'] === 'pending') {
             $error = "Akun Anda sedang dalam proses verifikasi oleh Admin.";
         } elseif ($user['status'] === 'rejected') {
-            $error = "Pendaftaran akun Anda ditolak oleh Admin.";
+            $error = "Akun Anda ditangguhkan (Suspended) oleh Admin.";
         } else {
             $_SESSION['user_id']  = $user['id'];
             $_SESSION['username'] = $user['username'];
@@ -297,6 +297,47 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     .back-link a:hover { color: #5BC9CC; }
 
+    .saved-email-chip {
+        background: #ffffff;
+        border: 2px solid #2D1459;
+        border-radius: 8px;
+        padding: 6px 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 2px 2px 0 #2D1459;
+    }
+    .saved-email-chip:hover {
+        background: #F8F4E3;
+        transform: translate(-1px, -1px);
+        box-shadow: 3px 3px 0 #2D1459;
+    }
+    .saved-email-chip:active {
+        transform: translate(1px, 1px);
+        box-shadow: 1px 1px 0 #2D1459;
+    }
+    .saved-email-chip .chip-text {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #2D1459;
+    }
+    .saved-email-chip .btn-remove-chip {
+        background: none;
+        border: none;
+        color: #ef4444;
+        padding: 0;
+        margin-left: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+    }
+    .saved-email-chip .btn-remove-chip:hover {
+        color: #dc2626;
+    }
+
     /* Mobile */
     @media (max-width: 768px) {
         .left-panel { display: none; }
@@ -339,11 +380,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <?php endif; ?>
 
             <form method="POST">
+                <!-- Suggestion Chips for Saved Accounts -->
+                <div id="emailSuggestions" class="mb-3 d-none">
+                    <label class="form-label text-muted" style="font-size: 0.72rem; text-transform: uppercase;">Akun Terdaftar di Browser Ini:</label>
+                    <div class="d-flex flex-wrap gap-2" id="suggestionBadges"></div>
+                </div>
+
                 <div class="mb-3">
-                    <label class="form-label">Username</label>
+                    <label class="form-label">Username atau Email</label>
                     <div class="input-icon-wrap">
                         <i class="bi bi-person-fill input-icon"></i>
-                        <input type="text" name="username" class="nb-input" placeholder="Masukkan username..." required autocomplete="username">
+                        <input type="text" name="username" id="usernameInput" class="nb-input" placeholder="Masukkan username atau email..." required autocomplete="username">
                     </div>
                 </div>
                 <div class="mb-2">
@@ -387,10 +434,86 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", function() {
+    renderEmailChips();
+});
+
+function renderEmailChips() {
+    try {
+        const emails = JSON.parse(localStorage.getItem('registered_emails') || '[]');
+        const container = document.getElementById('emailSuggestions');
+        const badgeList = document.getElementById('suggestionBadges');
+        
+        if (emails.length === 0) {
+            container.classList.add('d-none');
+            return;
+        }
+        
+        container.classList.remove('d-none');
+        badgeList.innerHTML = '';
+        
+        emails.forEach(email => {
+            const chip = document.createElement('div');
+            chip.className = 'saved-email-chip';
+            chip.onclick = function() {
+                selectEmail(email);
+            };
+            
+            const envelopeIcon = document.createElement('i');
+            envelopeIcon.className = 'bi bi-envelope-fill text-primary';
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'chip-text';
+            textSpan.textContent = email;
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn-remove-chip';
+            removeBtn.innerHTML = '<i class="bi bi-x-circle-fill"></i>';
+            removeBtn.onclick = function(e) {
+                e.stopPropagation();
+                removeEmail(email);
+            };
+            
+            chip.appendChild(envelopeIcon);
+            chip.appendChild(textSpan);
+            chip.appendChild(removeBtn);
+            badgeList.appendChild(chip);
+        });
+    } catch (e) {
+        console.error('Gagal menampilkan email terdaftar:', e);
+    }
+}
+
+function selectEmail(email) {
+    const input = document.getElementById('usernameInput');
+    input.value = email;
+    input.focus();
+    
+    // Auto focus password input
+    const passwordInput = document.getElementById('passInput');
+    if (passwordInput) {
+        passwordInput.focus();
+    }
+}
+
+function removeEmail(email) {
+    if (confirm('Hapus saran email "' + email + '" dari browser ini?')) {
+        try {
+            let emails = JSON.parse(localStorage.getItem('registered_emails') || '[]');
+            emails = emails.filter(e => e !== email);
+            localStorage.setItem('registered_emails', JSON.stringify(emails));
+            renderEmailChips();
+        } catch (e) {
+            console.error('Gagal menghapus email terdaftar:', e);
+        }
+    }
+}
+
 function startGoogleAuth() {
     const clientId = "<?php echo GOOGLE_CLIENT_ID; ?>";
     const redirectUri = "<?php echo GOOGLE_REDIRECT_URI; ?>";
-    if (clientId === 'YOUR_GOOGLE_CLIENT_ID') {
+    if (clientId === 'YOUR_GOOGLE_CLIENT_ID' || clientId === '') {
         window.location.href = `mock_google.php?redirect_uri=${encodeURIComponent(redirectUri)}&state=user`;
     } else {
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20profile%20email&state=user`;

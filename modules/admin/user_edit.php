@@ -62,7 +62,7 @@ include '../../layouts/header.php';
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
-                <div class="card-header bg-neubrutal-blue py-3 border-bottom border-3 border-dark">
+                <div class="card-header py-3 border-bottom border-3 border-dark" style="background: var(--primary) !important; color: #ffffff !important;">
                     <h5 class="mb-0 fw-black text-uppercase text-white">Edit Pengguna</h5>
                 </div>
                 <div class="card-body p-4">
@@ -101,8 +101,7 @@ include '../../layouts/header.php';
                                 <label class="form-label">Status Verifikasi</label>
                                 <select name="status" class="form-select" required>
                                     <option value="verified" <?php echo $user['status'] == 'verified' ? 'selected' : ''; ?>>Verified</option>
-                                    <option value="pending" <?php echo $user['status'] == 'pending' ? 'selected' : ''; ?>>Pending</option>
-                                    <option value="rejected" <?php echo $user['status'] == 'rejected' ? 'selected' : ''; ?>>Rejected</option>
+                                    <option value="rejected" <?php echo ($user['status'] == 'rejected' || $user['status'] == 'pending') ? 'selected' : ''; ?>>Suspended</option>
                                 </select>
                             </div>
                         </div>

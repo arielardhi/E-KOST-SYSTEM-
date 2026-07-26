@@ -95,8 +95,12 @@ include '../layouts/header.php';
     box-shadow: 0 10px 30px rgba(45, 20, 89, 0.15);
 }
 .booking-header-hero h2 {
+    color: #ffffff !important;
     font-weight: 800;
     letter-spacing: -0.02em;
+}
+.booking-header-hero p {
+    color: #ffffff !important;
 }
 .booking-step-badge {
     background: rgba(0, 201, 208, 0.15);
